@@ -9,6 +9,57 @@ DEFAULT_SOC := mt7621
 KERNEL_DTB += -d21
 DEVICE_VARS += ELECOM_HWNAME LINKSYS_HWNAME
 
+define Build/beeline-sbgiga-factory
+	$(eval kernel_tag=$(word 1,$(1)))
+	$(eval rootfs_tag=$(word 2,$(1)))
+	$(TOPDIR)/scripts/sercomm-partition-tag.py \
+		--input-file $@ \
+		--output-file $@.tmp \
+		--part-name $(rootfs_tag) \
+		--part-version $(SERCOMM_SWVER)
+	mv $@.tmp $@
+	dd if=$(IMAGE_KERNEL) >> $@.kernel 2>/dev/null
+	$(TOPDIR)/scripts/sercomm-partition-tag.py \
+		--input-file $@.kernel \
+		--output-file $@.kernel.tmp \
+		--part-name $(kernel_tag) \
+		--part-version $(SERCOMM_SWVER)
+	mv $@.kernel.tmp $@.kernel
+	dd if=$@ >> $@.kernel 2>/dev/null
+	mv $@.kernel $@
+	gzip -f -9n -c $@ > $@.gz
+	mv $@.gz $@
+	dd if=/dev/zero count=$$((0x70)) ibs=1 status=none | tr '\000' \
+		'0' | dd of=$@.pid conv=notrunc 2>/dev/null
+	dd if=/dev/zero count=$$((0x10)) ibs=1 status=none | tr '\000' \
+		'\0' | dd of=$@.pid bs=1 seek=$$((0x70)) conv=notrunc \
+		2>/dev/null
+	echo -n $(SERCOMM_HWVER)$(SERCOMM_HWID) | dd of=$@.pid bs=1 \
+		conv=notrunc 2>/dev/null
+	echo -n $(SERCOMM_SWVER) | dd of=$@.pid bs=1 seek=$$((0x64)) \
+		conv=notrunc 2>/dev/null
+	printf '\x0a' | dd of=$@.pid bs=1 seek=$$((0x70)) conv=notrunc \
+		2>/dev/null
+	$(TOPDIR)/scripts/sercomm-payload.py \
+		--input-file $@ \
+		--output-file $@.tmp \
+		--pid "$$(cat $@.pid | od -t x1 -An -v | tr -d '\n')"
+	mv $@.tmp $@
+	rm $@.pid
+	$(TOPDIR)/scripts/sercomm-crypto.py \
+		--input-file $@ \
+		--key-file $@.key \
+		--output-file $@.ser \
+		--version $(SERCOMM_SWVER)
+	$(STAGING_DIR_HOST)/bin/openssl enc -md md5 -aes-256-cbc \
+		-in $@ -out $@.enc \
+		-K `cat $@.key` \
+		-iv 00000000000000000000000000000000
+	dd if=$@.enc >> $@.ser 2>/dev/null
+	mv $@.ser $@
+	rm -f $@.enc $@.key
+endef
+
 define Build/gemtek-trailer
 	printf "%s%08X" ".GEMTEK." "$$(cksum $@ | cut -d ' ' -f1)" >> $@
 endef
@@ -214,6 +265,35 @@ define Device/asus_rt-n56u-b1
 	kmod-usb-ledtrig-usbport
 endef
 TARGET_DEVICES += asus_rt-n56u-b1
+
+define Device/beeline_smartbox-giga
+  $(Device/dsa-migration)
+  BLOCKSIZE := 128k
+  PAGESIZE := 2048
+  IMAGE_SIZE := 24576k
+  KERNEL_SIZE := 6144k
+  UBINIZE_OPTS := -E 5
+  LOADER_TYPE := bin
+  KERNEL_LOADADDR := 0x81001000
+  LZMA_TEXT_START := 0x82800000
+  KERNEL := kernel-bin | append-dtb | lzma | loader-kernel | lzma | \
+	uImage lzma | sercomm-kernel
+  KERNEL_INITRAMFS := kernel-bin | append-dtb | lzma | loader-kernel | \
+	lzma | uImage lzma
+  IMAGES += factory.img
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  IMAGE/factory.img := append-ubi | beeline-sbgiga-factory kernel rootfs
+  SERCOMM_KERNEL_OFFSET := 0x400100
+  SERCOMM_ROOTFS_OFFSET := 0x1000000
+  SERCOMM_HWID := 444245
+  SERCOMM_HWVER := 00010100
+  SERCOMM_SWVER := 1001
+  DEVICE_VENDOR := Beeline
+  DEVICE_MODEL := SmartBox GIGA
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7663-firmware-ap \
+	kmod-usb3 uboot-envtools
+endef
+TARGET_DEVICES += beeline_smartbox-giga
 
 define Device/buffalo_wsr-1166dhp
   $(Device/dsa-migration)
