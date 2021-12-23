@@ -22,6 +22,31 @@ define Build/elecom-wrc-gs-factory
 	mv $@.new $@
 endef
 
+define Build/beeline_smartbox-flash_firmware-header
+	echo -ne "$$(echo 000001001c0000000000420000000000 | sed \
+		's/../\\x&/g')" | dd of=$@.tmp bs=1 count=16 \
+		conv=notrunc status=none 2>/dev/null
+	dd if=$@ >> $@.tmp
+	mv $@.tmp $@
+	echo -n "hsqs" | dd of=$@ bs=1 seek=$$((0x41fff4)) count=4 \
+		conv=notrunc status=none 2>/dev/null
+	echo -ne "$$(echo 5d436f740070ff00 | sed 's/../\\x&/g')" | dd \
+		of=$@.tmp bs=1 count=8 conv=notrunc status=none \
+		2>/dev/null
+	echo -ne "$$(dd if=$@ bs=16740340 count=1 2>/dev/null | gzip -c \
+		| tail -c 8 | od -An -tx4 -N4 --endian=big | tr -d ' \n' \
+		| awk '{ printf "%8s\n", $$0 }' | tr '0123456789abcdef' \
+		'fedcba9876543210' | sed 's/../\\x&/g')" | dd of=$@.tmp \
+		bs=1 seek=8 count=4 conv=notrunc status=none 2>/dev/null
+	dd if=$@ >> $@.tmp
+	mv $@.tmp $@
+	echo -ne "$$(echo 0070ff00 | sed 's/../\\x&/g')" | dd of=$@ bs=1 \
+		seek=$$((0xff7004)) count=4 conv=notrunc status=none \
+		2>/dev/null
+	echo -n "HDR0" | dd of=$@ bs=1 seek=$$((0xff710c)) count=4 \
+		conv=notrunc status=none 2>/dev/null
+endef
+
 define Build/gemtek-trailer
 	printf "%s%08X" ".GEMTEK." "$$(cksum $@ | cut -d ' ' -f1)" >> $@
 endef
@@ -225,6 +250,27 @@ define Device/asus_rt-n56u-b1
 	kmod-usb-ledtrig-usbport
 endef
 TARGET_DEVICES += asus_rt-n56u-b1
+
+define Device/beeline_smartbox-flash
+   $(Device/dsa-migration)
+   $(Device/uimage-lzma-loader)
+   DEVICE_VENDOR := Beeline
+   DEVICE_MODEL := SmartBox Flash
+   IMAGE_SIZE := 55808k
+   UBINIZE_OPTS := -E 5
+   BLOCKSIZE := 128k
+   PAGESIZE := 2048
+   KERNEL := kernel-bin | append-dtb | lzma | loader-kernel | uImage none \
+	| pad-to 16805860 | beeline_smartbox-flash_firmware-header
+   KERNEL_INITRAMFS := kernel-bin | append-dtb | lzma | loader-kernel | uImage none
+   IMAGES += kernel.bin rootfs.bin
+   IMAGE/kernel.bin := append-kernel
+   IMAGE/rootfs.bin := append-ubi | check-size
+   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+   DEVICE_PACKAGES := kmod-usb3 kmod-mt7615e kmod-mt7615-firmware \
+   	uboot-envtools
+endef
+TARGET_DEVICES += beeline_smartbox-flash
 
 define Device/buffalo_wsr-1166dhp
   $(Device/dsa-migration)
