@@ -803,7 +803,7 @@ define Device/linksys_e5600
   DEVICE_VENDOR := Linksys
   DEVICE_MODEL := E5600
   DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7663-firmware-ap \
-	kmod-mt7663-firmware-sta uboot-envtools
+	uboot-envtools
   UBINIZE_OPTS := -E 5
   IMAGES += factory.bin
   IMAGE/sysupgrade.bin := sysupgrade-tar | check-size | append-metadata
@@ -1237,7 +1237,7 @@ define Device/tplink_archer-a6-v3
   DEVICE_MODEL := Archer A6
   DEVICE_VARIANT := V3
   DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e \
-	kmod-mt7663-firmware-ap kmod-mt7663-firmware-sta
+	kmod-mt7663-firmware-ap
   TPLINK_BOARD_ID := ARCHER-A6-V3
   KERNEL := $(KERNEL_DTB) | uImage lzma
   IMAGE_SIZE := 15744k
@@ -1566,6 +1566,15 @@ define Device/youku_yk-l2
 	kmod-usb-ledtrig-usbport
 endef
 TARGET_DEVICES += youku_yk-l2
+
+define Device/yuncore_ax820
+  $(Device/dsa-migration)
+  IMAGE_SIZE := 15808k
+  DEVICE_VENDOR := YunCore
+  DEVICE_MODEL := AX820
+  DEVICE_PACKAGES := kmod-mt7915e
+endef
+TARGET_DEVICES += yuncore_ax820
 
 define Device/zbtlink_zbt-we1326
   $(Device/dsa-migration)
