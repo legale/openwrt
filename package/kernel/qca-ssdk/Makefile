@@ -19,7 +19,7 @@ define KernelPackage/qca-ssdk
   CATEGORY:=Kernel modules
   SUBMENU:=Network Devices
   TITLE:=Qualcom SSDK switch driver
-  DEPENDS:=@(TARGET_ipq807x)
+  DEPENDS:=@(TARGET_ipq807x||TARGET_ipq60xx)
   FILES:=$(PKG_BUILD_DIR)/build/bin/qca-ssdk.ko
   AUTOLOAD:=$(call AutoLoad,30,qca-ssdk)
 endef
@@ -27,6 +27,7 @@ endef
 define KernelPackage/qca-ssdk/Description
   Driver for Qualcomm Atheros switches.
 endef
+
 
 GCC_VERSION=$(shell echo "$(CONFIG_GCC_VERSION)" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
 
@@ -48,7 +49,11 @@ MAKE_FLAGS+= \
 	EXTRA_CFLAGS=-fno-stack-protector -I$(STAGING_DIR)/usr/include \
 	$(KERNEL_MAKE_FLAGS)
 
-ifeq ($(CONFIG_TARGET_BOARD), "ipq807x")
+
+
+ifeq ($(CONFIG_TARGET_BOARD), "ipq60xx")
+    MAKE_FLAGS+= CHIP_TYPE=CPPE PTP_FEATURE=disable SWCONFIG_FEATURE=disable
+else ($(CONFIG_TARGET_BOARD), "ipq807x")
     MAKE_FLAGS+= CHIP_TYPE=HPPE PTP_FEATURE=disable SWCONFIG_FEATURE=disable
 endif
 
