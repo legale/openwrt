@@ -61,29 +61,87 @@
 };
 
 &tlmm {
-	mdio_pins: mdio-pins {
-		mdc {
+	uart_pins: uart_pins {
+		mux {
+			pins = "gpio44", "gpio45";
+			function = "blsp2_uart";
+			drive-strength = <8>;
+			bias-pull-down;
+		};
+	};
+
+	spi_0_pins: spi_0_pins {
+		mux {
+			pins = "gpio38", "gpio39", "gpio40", "gpio41";
+			function = "blsp0_spi";
+			drive-strength = <8>;
+			bias-pull-down;
+		};
+	};
+
+	button_pins: button_pins {
+		wps_button {
+			pins = "gpio9";
+			function = "gpio";
+			drive-strength = <8>;
+			bias-pull-down;
+		};
+	};
+
+	mdio_pins: mdio_pinmux {
+		mux_0 {
 			pins = "gpio64";
 			function = "mdc";
 			drive-strength = <8>;
 			bias-pull-up;
 		};
-
-		mdio {
+		mux_1 {
 			pins = "gpio65";
 			function = "mdio";
 			drive-strength = <8>;
 			bias-pull-up;
 		};
+		mux_2 {
+			pins = "gpio75";
+			function = "gpio";
+			bias-pull-up;
+		};
 	};
 
-	led_enable {
-		gpio-hog;
-		output-high;
-		gpios = <36 GPIO_ACTIVE_HIGH>;
-		line-name = "enable-leds";
+	leds_pins: leds_pins {
+		led_blue {
+			pins = "gpio35";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+
+		led_green {
+			pins = "gpio37";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+
+		led_red {
+			pins = "gpio32";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	button_pins: button_pins {
+		rst_button {
+			pins = "gpio19";
+			function = "gpio";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
 	};
 };
+
+
 
 &soc {
 	dp1 {
@@ -107,6 +165,24 @@
 		phy-handle = <&rtl8211f_4>;
 		phy-mode = "sgmii";
 	};
+
+
+	spi_0: spi@78b5000 {
+		compatible = "qcom,spi-qup-v2.2.1";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x078b5000 0x600>;
+		interrupts = <GIC_SPI 95 IRQ_TYPE_LEVEL_HIGH>;
+		spi-max-frequency = <50000000>;
+		clocks = <&gcc GCC_BLSP1_QUP1_SPI_APPS_CLK>,
+			<&gcc GCC_BLSP1_AHB_CLK>;
+		clock-names = "core", "iface";
+		dmas = <&blsp_dma 12>, <&blsp_dma 13>;
+		dma-names = "tx", "rx";
+		status = "disabled";
+	};
+
+
 };
 
 &edma {
@@ -153,12 +229,36 @@
 	};
 };
 
+
+/*
+ * U-boot looks for "n25q128a11" node,
+ * if we don't have it, it will spit out the following warning:
+ * "ipq: fdt fixup unable to find compatible node".
+ */
+&spi_0 {
+	pinctrl-0 = <&spi_0_pins>;
+	pinctrl-names = "default";
+	cs-select = <0>;
+	status = "ok";
+
+	m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		compatible = "n25q128a11";
+		linux,modalias = "m25p80", "n25q128a11";
+		spi-max-frequency = <50000000>;
+		use-default-sizes;
+	};
+};
+
+
 &qpic_bam {
-	status = "okay";
+	status = "ok";
 };
 
 &qpic_nand {
-	status = "okay";
+	status = "ok";
 
 	nand@0 {
 		reg = <0>;
@@ -170,5 +270,5 @@
 };
 
 &wifi {
-	status = "okay";
+	status = "ok";
 };
