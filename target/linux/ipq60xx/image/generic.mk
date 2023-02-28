@@ -32,9 +32,11 @@ define Device/yuncore_ax840
   	DEVICE_DTS_CONFIG := config@cp03-c1
   	SUPPORTED_DEVICES := yuncore,ax840
 	SOC := ipq6018
-        KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-        #KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-        KERNEL_INITRAMFS = kernel-bin | fit none $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  	IMAGES := sysupgrade.tar nand-factory.bin nand-factory.ubi
+	IMAGE/nand-factory.ubi := append-ubi
+	KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+        KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+        #KERNEL_INITRAMFS = kernel-bin | fit none $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
 
   	DEVICE_PACKAGES := ath11k-wifi-yuncore-ax840 ipq-wifi-yuncore_ax840 uboot-env
 endef
