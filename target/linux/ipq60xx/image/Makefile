@@ -9,7 +9,7 @@ define Device/Default
 	DEVICE_DTS_CONFIG := config@1
 	DEVICE_DTS_DIR := $(DTS_DIR)/qcom
   	KERNEL_IN_UBI := 1
-  	ROOTFSNAME_IN_UBI := ubi_rootfs
+  	ROOTFSNAME_IN_UBI := rootfs
   	IMAGES := sysupgrade.bin nand-factory.bin
 	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
   	IMAGE/nand-factory.bin := append-ubi | qsdk-ipq-factory-nand

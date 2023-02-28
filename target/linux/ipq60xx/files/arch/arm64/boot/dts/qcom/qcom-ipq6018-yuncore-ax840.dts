@@ -26,7 +26,7 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-		bootargs-append = " ubi.block=0,rootfs root=/dev/ubiblock0_1";
+		bootargs-append = " earlycon=msm_serial_dm,0x78b1000 console=serial0,115200n8 ubi.block=0,rootfs root=/dev/ubiblock0_1";
 	};
 
 	keys {
@@ -166,7 +166,6 @@
 		phy-mode = "sgmii";
 	};
 
-
 	spi_0: spi@78b5000 {
 		compatible = "qcom,spi-qup-v2.2.1";
 		#address-cells = <1>;
@@ -182,6 +181,20 @@
 		status = "disabled";
 	};
 
+	spi_1: spi@78b6000 {
+		compatible = "qcom,spi-qup-v2.2.1";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x078b6000 0x600>;
+		interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
+		spi-max-frequency = <50000000>;
+		clocks = <&gcc GCC_BLSP1_QUP2_SPI_APPS_CLK>,
+			<&gcc GCC_BLSP1_AHB_CLK>;
+		clock-names = "core", "iface";
+		dmas = <&blsp_dma 14>, <&blsp_dma 15>;
+		dma-names = "tx", "rx";
+		status = "disabled";
+	};
 
 };
 
