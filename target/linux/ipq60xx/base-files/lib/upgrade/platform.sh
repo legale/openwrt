@@ -1,5 +1,4 @@
-PART_NAME=firmware
-REQUIRE_IMAGE_METADATA=1
+. /lib/functions/system.sh
 
 RAMFS_COPY_BIN='fw_printenv fw_setenv'
 RAMFS_COPY_DATA='/etc/fw_env.config /var/lock/fw_printenv.lock'
@@ -13,10 +12,6 @@ yuncore_ax840_do_upgrade() {
 }
 
 platform_check_image() {
-	return 0;
-}
-
-platform_check_image() {
         local magic_long="$(get_magic_long "$1")"
         board=$(board_name)
         case $board in
@@ -26,8 +21,6 @@ platform_check_image() {
         esac
         return 1
 }
-
-
 
 platform_do_upgrade() {
 	case "$(board_name)" in

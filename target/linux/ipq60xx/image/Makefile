@@ -8,9 +8,11 @@ define Device/Default
 	DEVICE_DTS = $$(SOC)-$(lastword $(subst _, ,$(1)))
 	DEVICE_DTS_CONFIG := config@1
 	DEVICE_DTS_DIR := $(DTS_DIR)/qcom
-	IMAGES := sysupgrade.bin
-	IMAGE/sysupgrade.bin = sysupgrade-tar | append-metadata
-	IMAGE/sysupgrade.bin/squashfs :=
+  	KERNEL_IN_UBI := 1
+  	ROOTFSNAME_IN_UBI := ubi_rootfs
+  	IMAGES := sysupgrade.bin nand-factory.bin
+	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  	IMAGE/nand-factory.bin := append-ubi | qsdk-ipq-factory-nand
 	BLOCKSIZE := 128k
  	PAGESIZE := 2048
 	KERNEL_NAME := Image
