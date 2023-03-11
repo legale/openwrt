@@ -101,6 +101,7 @@ ramips_setup_interfaces()
 		ucidef_set_interface_lan "lan1 lan2 lan3 lan4 lan5"
 		;;
 	yuncore,ax820|\
+	yuncore,ax820-32mb|\
 	zyxel,nr7101)
 		ucidef_set_interfaces_lan_wan "lan" "wan"
 		;;
@@ -217,7 +218,8 @@ ramips_setup_macs()
 		wan_mac=$(mtd_get_mac_ascii Config protest_wan_mac)
 		label_mac=$lan_mac
 		;;
-	yuncore,ax820)
+	yuncore,ax820|\
+	yuncore,ax820-32mb)
 		label_mac=$(mtd_get_mac_binary Factory 0x4)
 		;;
 	esac
