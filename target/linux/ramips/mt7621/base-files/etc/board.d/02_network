@@ -88,6 +88,7 @@ ramips_setup_interfaces()
 		;;
 	cudy,m1800|\
 	yuncore,ax820|\
+	yuncore,ax820-32mb|\
 	zyxel,nt7101)
 		ucidef_set_interfaces_lan_wan "lan" "wan"
 		;;
@@ -132,6 +133,11 @@ ramips_setup_interfaces()
 		;;
 	ubnt,usw-flex)
 		ucidef_set_interface_lan "lan1 lan2 lan3 lan4 lan5"
+		;;
+	yuncore,ax820|\
+	yuncore,ax820-32mb|\
+	zyxel,nr7101)
+		ucidef_set_interfaces_lan_wan "lan" "wan"
 		;;
 	zyxel,wap6805)
 		ucidef_set_interface_lan "lan1 lan2 lan3 lan4"
@@ -275,7 +281,15 @@ ramips_setup_macs()
 		wan_mac=$(macaddr_add "$lan_mac" 1)
 		label_mac=$lan_mac
 		;;
-	yuncore,ax820)
+	yuncore,ax820|\
+	yuncore,ax820-32mb|\
+	raisecom,msg1500-x-00)
+		lan_mac=$(mtd_get_mac_ascii Config protest_lan_mac)
+		wan_mac=$(mtd_get_mac_ascii Config protest_wan_mac)
+		label_mac=$lan_mac
+		;;
+	yuncore,ax820|\
+	yuncore,ax820-32mb)
 		label_mac=$(mtd_get_mac_binary Factory 0x4)
 		;;
 	esac
