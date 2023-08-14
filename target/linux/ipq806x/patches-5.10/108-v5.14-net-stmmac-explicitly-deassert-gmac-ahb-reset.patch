@@ -29,7 +29,7 @@ Signed-off-by: David S. Miller <davem@davemloft.net>
 
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -5046,6 +5046,10 @@ int stmmac_dvr_probe(struct device *devi
+@@ -5052,6 +5052,10 @@ int stmmac_dvr_probe(struct device *devi
  			reset_control_reset(priv->plat->stmmac_rst);
  	}
  
