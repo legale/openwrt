@@ -53,6 +53,14 @@ ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq807x")
     MAKE_FLAGS+= CHIP_TYPE=HPPE
 endif
 
+ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
+    MAKE_FLAGS+= CHIP_TYPE=CPPE
+endif
+
+ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq50xx")
+    MAKE_FLAGS+= CHIP_TYPE=MP
+endif
+
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/qca-ssdk
 	$(INSTALL_DIR) $(1)/usr/include/qca-ssdk/api
