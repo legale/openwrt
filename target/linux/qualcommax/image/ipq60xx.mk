@@ -38,3 +38,16 @@ define Device/glinet_gl-axt1800
 		kmod-fs-exfat kmod-hwmon-pwmfan block-mount kmod-usb-storage kmod-usb2 fdisk
 endef
 TARGET_DEVICES += glinet_gl-axt1800
+
+define Device/xiaomi_ax1800
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Xiaomi
+	DEVICE_MODEL := AX1800
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	DEVICE_DTS_CONFIG := config@cp03-c1
+	SOC := ipq6018
+	DEVICE_PACKAGES := ipq-wifi-xiaomi_ax1800
+endef
+TARGET_DEVICES += xiaomi_ax1800
