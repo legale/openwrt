@@ -109,6 +109,18 @@ platform_do_upgrade() {
 		CI_ROOT_UBIPART="rootfs"
 		nand_do_upgrade "$1"
 		;;
+	yuncore,ax880)
+		local config_mtdnum="$(find_mtd_index 0:bootconfig)"
+		[ -z "$config_mtdnum" ] && reboot
+		# byte 168 (0xa8) contains information about which rootfs is bootable
+		part_num="$(hexdump -e '1/1 "%01x|"' -n 1 -s 168 -C /dev/mtd$config_mtdnum | cut -f 1 -d "|" | head -n1)"
+		if [ "$part_num" -eq "1" ]; then
+			CI_UBIPART="rootfs_1"
+		else
+			CI_UBIPART="rootfs"
+		fi
+		nand_do_upgrade "$1"
+		;;
 	*)
 		default_do_upgrade "$1"
 		;;
