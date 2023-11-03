@@ -60,7 +60,8 @@ define Device/edgecore_eap102
 	DEVICE_DTS_CONFIG := config@ac02
 	SOC := ipq8071
 	DEVICE_PACKAGES := ipq-wifi-edgecore_eap102
-	IMAGE/factory.ubi := append-ubi | qsdk-ipq-factory-nand
+	IMAGES += factory.ubi
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 endef
 TARGET_DEVICES += edgecore_eap102
 
