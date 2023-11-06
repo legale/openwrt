@@ -1,0 +1,20 @@
+diff -aur a/src/hsl/phy/hsl_phy.c b/src/hsl/phy/hsl_phy.c
+--- a/src/hsl/phy/hsl_phy.c	2022-09-12 11:20:42.000000000 +0300
++++ b/src/hsl/phy/hsl_phy.c	2023-10-31 07:12:24.403339048 +0300
+@@ -757,6 +757,7 @@
+ 	struct mii_bus *miibus = ssdk_phy_miibus_get(dev_id, phy_addr);
+ 
+ 	SW_RTN_ON_NULL(phydev);
++	SW_RTN_ON_NULL(miibus);
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION (5, 0, 0))
+ 	*phydev = miibus->phy_map[phy_addr];
+ 	if(*phydev == NULL)
+@@ -770,7 +771,7 @@
+ 	*phydev = mdiobus_get_phy(miibus, phy_addr);
+ 	if(*phydev == NULL)
+ 	{
+-		SSDK_ERROR("phy_addr %d phydev is NULL\n", phy_addr);
++		//SSDK_ERROR("phy_addr %d phydev is NULL\n", phy_addr);
+ 		return SW_NOT_INITIALIZED;
+ 	}
+ 	pdev_addr = (*phydev)->mdio.addr;

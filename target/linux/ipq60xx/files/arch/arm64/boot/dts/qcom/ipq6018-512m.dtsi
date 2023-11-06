@@ -1,0 +1,99 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+
+/*
+ * +=========+==============+========================+
+ * |        |              |                         |
+ * | Region | Start Offset |          Size           |
+ * |        |              |                         |
+ * +--------+--------------+-------------------------+
+ * |        |              |                         |
+ * |        |              |                         |
+ * |        |              |                         |
+ * |        |              |                         |
+ * | Linux  |  0x41000000  |         139MB           |
+ * |        |              |                         |
+ * |        |              |                         |
+ * |        |              |                         |
+ * +--------+--------------+-------------------------+
+ * | TZ App |  0x49B00000  |           6MB           |
+ * +--------+--------------+-------------------------+
+ *
+ * From the available 145 MB for Linux in the first 256 MB,
+ * we are reserving 6 MB for TZAPP.
+ *
+ */
+
+
+&tz {
+	reg = <0x0 0x49B00000 0x0 0x00600000>;
+};
+
+
+&reserved_memory {
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+	ranges;
+
+	m3_dump@4e300000 {
+		no-map;
+		reg = <0x00 0x4e300000 0x00 0x100000>;
+	};
+
+	nss@40000000 {
+		no-map;
+		reg = <0x00 0x40000000 0x00 0x1000000>;
+	};
+
+	q6_etr_dump@1 {
+		linux,phandle = <0x18>;
+		no-map;
+		phandle = <0x18>;
+		reg = <0x00 0x4e200000 0x00 0x100000>;
+	};
+
+	ramoops@4A0f0000 {
+		compatible = "ramoops";
+		record-size = <0x1000>;
+		reg = <0x00 0x4a0f0000 0x00 0x10000>;
+	};
+
+	rpm_msg_ram@0x60000 {
+		linux,phandle = <0x13>;
+		no-map;
+		phandle = <0x13>;
+		reg = <0x00 0x60000 0x00 0x6000>;
+	};
+
+	sbl@4A500000 {
+		no-map;
+		reg = <0x00 0x4a500000 0x00 0x100000>;
+	};
+
+	smem@4AA00000 {
+		linux,phandle = <0x11>;
+		no-map;
+		phandle = <0x11>;
+		reg = <0x00 0x4aa00000 0x00 0x100000>;
+	};
+
+	tz@4A600000 {
+		no-map;
+		reg = <0x00 0x4a600000 0x00 0x400000>;
+	};
+
+	uboot@4A100000 {
+		no-map;
+		reg = <0x00 0x4a100000 0x00 0x400000>;
+	};
+
+	wcnss@4ab00000 {
+		linux,phandle = <0x17>;
+		no-map;
+		phandle = <0x17>;
+		reg = <0x00 0x4ab00000 0x00 0x3700000>;
+	};
+};
+
+
+

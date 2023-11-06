@@ -1,0 +1,13 @@
+diff -aur a/drivers/clk/qcom/gcc-ipq6018.c b/drivers/clk/qcom/gcc-ipq6018.c
+--- a/drivers/clk/qcom/gcc-ipq6018.c	2023-10-25 12:59:04.000000000 +0300
++++ b/drivers/clk/qcom/gcc-ipq6018.c	2023-11-06 19:40:11.472618084 +0300
+@@ -26,7 +26,9 @@
+ #include "clk-regmap-mux.h"
+ #include "reset.h"
+ 
++#ifndef F
+ #define F(f, s, h, m, n) { (f), (s), (2 * (h) - 1), (m), (n) }
++#endif
+ 
+ enum {
+ 	P_XO,

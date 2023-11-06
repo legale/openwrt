@@ -40,6 +40,7 @@ ALLWIFIBOARDS:= \
 	wallys_dr40x9 \
 	xiaomi_ax3600 \
 	xiaomi_ax9000 \
+	yuncore_ax840 \
 	zte_mf289f \
 	zte_mf287 \
 	zte_mf287plus \
@@ -47,11 +48,16 @@ ALLWIFIBOARDS:= \
 
 ALLWIFIPACKAGES:=$(foreach BOARD,$(ALLWIFIBOARDS),ipq-wifi-$(BOARD))
 
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	cp board/* $(PKG_BUILD_DIR)
+endef
+
 define Package/ipq-wifi-default
   SUBMENU:=ath10k Board-Specific Overrides
   SECTION:=firmware
   CATEGORY:=Firmware
-  DEPENDS:=@(TARGET_ipq40xx||TARGET_ipq806x||TARGET_ipq807x)
+  DEPENDS:=@(TARGET_ipq40xx||TARGET_ipq806x||TARGET_ipq807x||TARGET_ipq60xx)
   TITLE:=Custom Board
 endef
 
@@ -76,12 +82,14 @@ define ipq-wifi-install-one
     $(call ipq-wifi-install-one-to,$(1),$(2),QCA9984/hw1.0),\
   $(if $(filter $(suffix $(1)),.QCA99X0 .qca99x0),\
     $(call ipq-wifi-install-one-to,$(1),$(2),QCA99X0/hw2.0),\
+  $(if $(filter $(suffix $(1)),.IPQ6018 .ipq6018),\
+    $(call ipq-wifi-install-ath11-one-to,$(1),$(2),IPQ6018/hw1.0),\
   $(if $(filter $(suffix $(1)),.IPQ8074 .ipq8074),\
     $(call ipq-wifi-install-ath11-one-to,$(1),$(2),IPQ8074/hw2.0),\
   $(if $(filter $(suffix $(1)),.QCN9074 .qcn9074),\
     $(call ipq-wifi-install-ath11-one-to,$(1),$(2),QCN9074/hw1.0),\
     $(error Unrecognized board-file suffix '$(suffix $(1))' for '$(1)')\
-  )))))))
+  ))))))))
 
 endef
 # Blank line required at end of above define due to foreach context
@@ -129,6 +137,7 @@ $(eval $(call generate-ipq-wifi-package,redmi_ax6,Redmi AX6))
 $(eval $(call generate-ipq-wifi-package,wallys_dr40x9,Wallys DR40X9))
 $(eval $(call generate-ipq-wifi-package,xiaomi_ax3600,Xiaomi AX3600))
 $(eval $(call generate-ipq-wifi-package,xiaomi_ax9000,Xiaomi AX9000))
+$(eval $(call generate-ipq-wifi-package,yuncore_ax840,YunCore AX840))
 $(eval $(call generate-ipq-wifi-package,zte_mf289f,ZTE MF289F))
 $(eval $(call generate-ipq-wifi-package,zte_mf287,ZTE MF287))
 $(eval $(call generate-ipq-wifi-package,zte_mf287plus,ZTE MF287Plus))
