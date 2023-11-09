@@ -13,7 +13,7 @@
 
 / {
 	model = "Yuncore AX840";
-	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018";
+	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018", "qcom,ipq6018-wifi";
 	
 	aliases {
 		ethernet0 = "/soc/dp5";
@@ -64,28 +64,6 @@
 };
 
 
-&mdio_pins {
-	mux_0 {
-		pins = "gpio64";
-		function = "mdc";
-		drive-strength = <8>;
-		bias-pull-up;
-	};
-
-	mux_1 {
-		pins = "gpio65";
-		function = "mdio";
-		drive-strength = <8>;
-		bias-pull-up;
-	};
-
-	mux_2 {
-		pins = "gpio75";
-		function = "gpio";
-		bias-pull-up;
-	};
-};
-
 &mdio {
 	status = "okay";
 
@@ -99,6 +77,32 @@
 	qca8075_4: ethernet-phy@1 {
 		reg = <4>;
 	};
+};
+
+&tlmm {
+
+	mdio_pins: mdio_pinmux {
+		mux_0 {
+			pins = "gpio64";
+			function = "mdc";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+
+		mux_1 {
+			pins = "gpio65";
+			function = "mdio";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+
+		mux_2 {
+			pins = "gpio75";
+			function = "gpio";
+			bias-pull-up;
+		};
+	};
+
 };
 
 &soc {

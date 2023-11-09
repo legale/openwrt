@@ -331,17 +331,6 @@ define KernelPackage/usb-bcma
 endef
 $(eval $(call KernelPackage,usb-bcma))
 
-define KernelPackage/usb-fotg210
-  TITLE:=Support for FOTG210 USB host controllers
-  DEPENDS:=@USB_SUPPORT @TARGET_gemini
-  KCONFIG:=CONFIG_USB_FOTG210_HCD
-  FILES:= \
-	$(if $(CONFIG_USB_FOTG210_HCD),$(LINUX_DIR)/drivers/usb/host/fotg210-hcd.ko)
-  AUTOLOAD:=$(call AutoLoad,50,fotg210-hcd,1)
-  $(call AddDepends/usb)
-endef
-$(eval $(call KernelPackage,usb-fotg210))
-
 define KernelPackage/usb-ssb
   TITLE:=Support for SSB USB controllers
   DEPENDS:=@USB_SUPPORT @TARGET_bcm47xx
@@ -545,7 +534,6 @@ $(eval $(call KernelPackage,usb-wdm))
 define KernelPackage/usb-audio
   TITLE:=Support for USB audio devices
   KCONFIG:= \
-	CONFIG_USB_AUDIO \
 	CONFIG_SND_USB=y \
 	CONFIG_SND_USB_AUDIO
   $(call AddDepends/usb)
@@ -1155,7 +1143,9 @@ $(eval $(call KernelPackage,usb-net-aqc111))
 
 define KernelPackage/usb-net-asix
   TITLE:=Kernel module for USB-to-Ethernet Asix convertors
-  DEPENDS:=+kmod-libphy +kmod-net-selftests +kmod-mdio-devres +kmod-phy-ax88796b
+  DEPENDS:= \
+	+kmod-libphy +kmod-net-selftests +kmod-mdio-devres +kmod-phy-ax88796b \
+	+LINUX_6_1:kmod-phylink
   KCONFIG:=CONFIG_USB_NET_AX8817X
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/asix.ko
   AUTOLOAD:=$(call AutoProbe,asix)
@@ -1283,7 +1273,7 @@ $(eval $(call KernelPackage,usb-net-smsc75xx))
 
 define KernelPackage/usb-net-smsc95xx
   TITLE:=SMSC LAN95XX based USB 2.0 10/100 ethernet devices
-  DEPENDS:=+kmod-libphy +kmod-phy-smsc
+  DEPENDS:=+kmod-libphy +kmod-phy-smsc +LINUX_6_1:kmod-net-selftests
   KCONFIG:=CONFIG_USB_NET_SMSC95XX
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/smsc95xx.ko
   AUTOLOAD:=$(call AutoProbe,smsc95xx)

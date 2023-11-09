@@ -50,8 +50,6 @@ ifeq ($(CONFIG_TARGET_BOARD), "ipq807x")
     MAKE_FLAGS += CHIP_TYPE=HPPE
 else ifeq ($(CONFIG_TARGET_BOARD), "ipq60xx")
     MAKE_FLAGS += CHIP_TYPE=CPPE
-else
-    $(error No valid CHIP_TYPE defined. Please check your configuration.)
 endif
 
 define Build/InstallDev

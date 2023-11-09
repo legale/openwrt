@@ -134,6 +134,7 @@ define KernelPackage/lib-zstd
   FILES:= \
 	$(LINUX_DIR)/crypto/zstd.ko \
 	$(LINUX_DIR)/lib/xxhash.ko \
+	$(LINUX_DIR)/lib/zstd/zstd_common.ko@ge6.1 \
 	$(LINUX_DIR)/lib/zstd/zstd_compress.ko \
 	$(LINUX_DIR)/lib/zstd/zstd_decompress.ko
   AUTOLOAD:=$(call AutoProbe,xxhash zstd zstd_compress zstd_decompress)
@@ -317,3 +318,29 @@ define KernelPackage/oid-registry
 endef
 
 $(eval $(call KernelPackage,oid-registry))
+
+
+define KernelPackage/lib-objagg
+  SUBMENU:=$(LIB_MENU)
+  TITLE:=objagg support
+  FILES:=$(LINUX_DIR)/lib/objagg.ko
+  KCONFIG:= \
+  CONFIG_OBJAGG \
+  CONFIG_TEST_OBJAGG=n
+  AUTOLOAD:=$(call AutoProbe,objagg)
+endef
+
+$(eval $(call KernelPackage,lib-objagg))
+
+
+define KernelPackage/lib-parman
+  SUBMENU:=$(LIB_MENU)
+  TITLE:=parman support
+  FILES:=$(LINUX_DIR)/lib/parman.ko
+  KCONFIG:= \
+  CONFIG_PARMAN \
+  CONFIG_TEST_PARMAN=n
+  AUTOLOAD:=$(call AutoProbe,parman)
+endef
+
+$(eval $(call KernelPackage,lib-parman))
