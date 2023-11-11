@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: (GPL-2.0+)
+// SPDX-License-Identifier: MIT, GPL-2.0 or later
+/* Copyright (c) 2023, Ruslan Isaev <legale.legale@gmail.com> */
 
 /dts-v1/;
 
@@ -7,13 +8,14 @@
 //#include "ipq6018-upstreamable.dtsi"
 //#include "ipq6018-regulator-mp5496.dtsi"
 #include "ipq6018-ess.dtsi"
+#include "ipq6018-wifi.dtsi"
 
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/gpio/gpio.h>
 
 / {
 	model = "Yuncore AX840";
-	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018", "qcom,ipq6018-wifi";
+	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018";
 	
 	aliases {
 		ethernet0 = "/soc/dp5";
