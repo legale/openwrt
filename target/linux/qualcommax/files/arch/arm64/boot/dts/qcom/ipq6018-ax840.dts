@@ -1,0 +1,215 @@
+// SPDX-License-Identifier: MIT, GPL-2.0 or later
+/* Copyright (c) 2023, Ruslan Isaev <legale.legale@gmail.com> */
+
+
+/dts-v1/;
+
+#include "ipq6018.dtsi"
+#include "ipq6018-ess.dtsi"
+#include "ipq6018-wifi.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	model = "Yuncore AX840";
+	compatible = "yuncore,ax840", "qcom,ipq6018", "qcom,ipq6018-cp03";
+
+	aliases {
+		serial0 = &blsp1_uart3;
+		led-boot = &led_system;
+		led-failsafe = &led_system;
+		led-running = &led_system;
+		led-upgrade = &led_system;
+		/*
+		 * Aliases as required by u-boot
+		 * to patch MAC addresses
+		 */
+		ethernet0 = &dp5;
+		ethernet1 = &dp4;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	keys {
+		compatible = "gpio-keys";
+
+		reset {
+			label = "reset";
+			gpios = <&tlmm 19 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
+		leds {
+			compatible = "gpio-leds";
+			pinctrl-0 = <&leds_pins>;
+			pinctrl-names = "default";
+
+			led_system: system {
+				label = "green:system";
+				gpio = <&tlmm 37 GPIO_ACTIVE_HIGH>;
+			};
+
+			wlan2g {
+				label = "blue:wlan2g";
+				gpio = <&tlmm 35 GPIO_ACTIVE_HIGH>;
+			};
+
+			wlan5g {
+				label = "red:wlan5g";
+				gpio = <&tlmm 32 GPIO_ACTIVE_HIGH>;
+			};
+		};
+	};
+};
+
+&tlmm {
+	i2c_1_pins: i2c-1-state {
+		pins = "gpio42", "gpio43";
+		function = "blsp2_i2c";
+		drive-strength = <8>;
+	};
+
+	mdio_pins: mdio-state {
+		mdc-pins {
+			bias-pull-up;
+			drive-strength = <8>;
+			function = "mdc";
+			pins = "gpio64";
+		};
+
+		mdio-pins {
+			bias-pull-up;
+			drive-strength = <8>;
+			function = "mdio";
+			pins = "gpio65";
+		};
+
+		gpio-pins {
+			bias-pull-up;
+			function = "gpio";
+			pins = "gpio75";
+		};
+	};
+
+	leds_pins: leds_pins {
+		led_blue {
+			pins = "gpio35";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+
+		led_green {
+			pins = "gpio37";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+
+		led_red {
+			pins = "gpio32";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+};
+
+&blsp1_uart3 {
+	pinctrl-0 = <&serial_3_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&blsp1_i2c3 {
+	pinctrl-0 = <&i2c_1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&qpic_bam {
+	status = "okay";
+};
+
+&qpic_nand {
+	status = "okay";
+
+	nand@0 {
+		reg = <0>;
+
+		nand-ecc-strength = <4>;
+		nand-ecc-step-size = <512>;
+		nand-bus-width = <8>;
+
+		partitions {
+			compatible = "qcom,smem-part";
+		};
+	};
+};
+
+&ssphy_0 {
+	status = "okay";
+};
+
+&mdio {
+	status = "okay";
+
+	pinctrl-0 = <&mdio_pins>;
+	pinctrl-names = "default";
+	reset-gpios = <&tlmm 75 GPIO_ACTIVE_LOW>;
+
+	qca8075_3: ethernet-phy@3 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <3>;
+	};
+
+	qca8075_4: ethernet-phy@4 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <4>;
+	};
+};
+
+&switch {
+	switch_cpu_bmp = <0x1>;   /* cpu port bitmap */
+	switch_lan_bmp = <0x1e>;  /* lan port bitmap */
+	switch_wan_bmp = <0x20>;  /* wan port bitmap */
+	switch_inner_bmp = <0xc0>;/*inner port bitmap*/
+	switch_mac_mode = <0x0>;  /* mac mode for uniphy instance0*/
+	switch_mac_mode1 = <0xff>;/* mac mode for uniphy instance1*/
+	switch_mac_mode2 = <0xff>;/* mac mode for uniphy instance2*/
+	status = "okay";
+
+	qcom,port_phyinfo {
+		port@3 {
+			port_id = <4>;
+			phy_address = <3>;
+		};
+		port@4 {
+			port_id = <5>;
+			phy_address = <4>;
+		};
+	};
+};
+
+&edma {
+	status = "okay";
+};
+
+&dp4 {
+	status = "okay";
+	phy-handle = <&qca8075_3>;
+	label = "lan";
+};
+
+&dp5 {
+	status = "okay";
+	phy-handle = <&qca8075_4>;
+	label = "wan";
+};
+
+
+&wifi {
+	status = "okay";
+	qcom,ath11k-calibration-variant = "Yuncore-AX840";
+};

@@ -17,6 +17,9 @@ ipq807x_setup_interfaces()
 	glinet,gl-axt1800)
 		ucidef_set_interfaces_lan_wan "eth1 eth2" "eth0"
 		;;
+	yuncore,ax840)
+		ucidef_set_interfaces_lan_wan "lan" "wan"
+		;;
 	*)
 		echo "Unsupported hardware. Network interfaces not initialized"
 		;;
