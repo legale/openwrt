@@ -1,0 +1,1278 @@
+diff -aur a/src/hsl/dess/dess_acl_parse.c b/src/hsl/dess/dess_acl_parse.c
+--- a/src/hsl/dess/dess_acl_parse.c	2023-10-04 11:32:01.000000000 +0300
++++ b/src/hsl/dess/dess_acl_parse.c	2023-11-12 13:29:12.496333623 +0300
+@@ -1451,12 +1451,12 @@
+     a_uint32_t mask_en;
+ 
+     /* destnation mac address */
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE2, sw->dest_mac_val.uc[2]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE3, sw->dest_mac_val.uc[3]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE4, sw->dest_mac_val.uc[4]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE5, sw->dest_mac_val.uc[5]);
+-    FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
+-    FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE2, sw->dest_mac_val.uc[2]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE3, sw->dest_mac_val.uc[3]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE4, sw->dest_mac_val.uc[4]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE5, sw->dest_mac_val.uc[5]);
++    QCA_FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
++    QCA_FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
+ 
+     FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
+     FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
+@@ -1470,12 +1470,12 @@
+     }
+ 
+     /* source mac address */
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE0, sw->src_mac_val.uc[0]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE1, sw->src_mac_val.uc[1]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
+-    FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
+-    FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE0, sw->src_mac_val.uc[0]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE1, sw->src_mac_val.uc[1]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
++    QCA_FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
++    QCA_FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
+ 
+     FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
+     FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
+@@ -1489,7 +1489,7 @@
+     }
+ 
+     /* ethernet type */
+-    FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
++    QCA_FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
+     FIELD_GET_MASK(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+     if (0x0 != sw->ethtype_mask)
+     {
+@@ -1505,7 +1505,7 @@
+     }
+ 
+     /* vlan priority */
+-    FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANPRIM, sw->up_mask);
+     if (0x0 != sw->up_mask)
+     {
+@@ -1513,7 +1513,7 @@
+     }
+ 
+     /* vlanid */
+-    FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_mask);
+     FIELD_GET_MASK(MAC_RUL_M4, VIDMSK, mask_en);
+     if (mask_en)
+@@ -1533,14 +1533,14 @@
+     }
+ 
+     /* vlan cfi */
+-    FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
+     if (0x0 != sw->cfi_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CFI);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1554,7 +1554,7 @@
+ {
+     a_uint32_t i, mask_en, data;
+ 
+-    FIELD_GET(EHMAC_RUL_V3, DA_EN, data);
++    QCA_FIELD_GET(EHMAC_RUL_V3, DA_EN, data);
+     if (data)
+     {
+         for (i = 2; i < 6; i++)
+@@ -1574,9 +1574,9 @@
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_DA);
+         }
+ 
+-        FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
++        QCA_FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
+ 
+         FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+         FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+@@ -1606,9 +1606,9 @@
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_SA);
+         }
+ 
+-        FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->dest_mac_val.uc[3]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
++        QCA_FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->dest_mac_val.uc[3]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
+ 
+         FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
+         FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
+@@ -1620,7 +1620,7 @@
+     }
+ 
+     /* ethernet type */
+-    FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+     if (0x0 != sw->ethtype_mask)
+     {
+@@ -1628,17 +1628,17 @@
+     }
+ 
+     /* packet stagged */
+-    FIELD_GET(EHMAC_RUL_V3, STAGGEDV, sw->stagged_val);
+-    FIELD_GET(EHMAC_RUL_V3, STAGGEDM, sw->stagged_mask);
++    QCA_FIELD_GET(EHMAC_RUL_V3, STAGGEDV, sw->stagged_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, STAGGEDM, sw->stagged_mask);
+     if (0x0 != sw->stagged_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_STAGGED);
+     }
+ 
+     /* stag vid */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
+-    FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
++    QCA_FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
+     if (mask_en)
+     {
+         sw->stag_vid_op = FAL_ACL_FIELD_MASK;
+@@ -1656,7 +1656,7 @@
+     }
+ 
+     /* stag priority */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
+     if (0x0 != sw->stag_pri_mask)
+     {
+@@ -1664,7 +1664,7 @@
+     }
+ 
+     /* stag dei */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
+     if (0x0 != sw->stag_dei_mask)
+     {
+@@ -1680,8 +1680,8 @@
+     }
+ 
+     /* ctag vid */
+-    FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
++    QCA_FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
+     sw->ctag_vid_val |= (data << 8);
+     FIELD_GET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, data);
+@@ -1705,7 +1705,7 @@
+     }
+ 
+     /* ctag priority */
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
+     if (0x0 != sw->ctag_pri_mask)
+     {
+@@ -1713,14 +1713,14 @@
+     }
+ 
+     /* ctag dei */
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
+     if (0x0 != sw->ctag_cfi_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_CFI);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1748,21 +1748,21 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP4_SIP);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
+     if (0x0 != sw->ip_proto_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
+     if (0x0 != sw->ip_dscp_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4DPORTM_EN, mask_en);
+     if (mask_en)
+@@ -1786,17 +1786,17 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_L4_DPORT);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, ICMP_EN, icmp_en);
++    QCA_FIELD_GET(IP4_RUL_V3, ICMP_EN, icmp_en);
+     if (icmp_en)
+     {
+-        FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
+         if (0x0 != sw->icmp_type_mask)
+         {
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
+         }
+ 
+-        FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
+         if (0x0 != sw->icmp_code_mask)
+         {
+@@ -1805,7 +1805,7 @@
+     }
+     else
+     {
+-        FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM_EN, mask_en);
+         if (mask_en)
+@@ -1830,28 +1830,28 @@
+         }
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
+     if (0x0 != sw->tcp_flag_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
+     if (0x0 != sw->ripv1_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_RIPV1);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
+     if (0x0 != sw->dhcpv4_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV4);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1875,7 +1875,7 @@
+         }
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1899,7 +1899,7 @@
+         }
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1913,21 +1913,21 @@
+ {
+     a_uint32_t mask_en, icmp6_en, tmp;
+ 
+-    FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
++    QCA_FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
+     FIELD_GET_MASK(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
+     if (0x0 != sw->ip_proto_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
++    QCA_FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
+     FIELD_GET_MASK(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
+     if (0x0 != sw->ip_dscp_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
++    QCA_FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
+     FIELD_GET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, mask_en);
+     if (mask_en)
+@@ -1951,17 +1951,17 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_L4_DPORT);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, ICMP6_EN, icmp6_en);
++    QCA_FIELD_GET(IP6_RUL3_V3, ICMP6_EN, icmp6_en);
+     if (icmp6_en)
+     {
+-        FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
+         if (0x0 != sw->icmp_type_mask)
+         {
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
+         }
+ 
+-        FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
+         if (0x0 != sw->icmp_code_mask)
+         {
+@@ -1970,7 +1970,7 @@
+     }
+     else
+     {
+-        FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, mask_en);
+         if (mask_en)
+@@ -1995,10 +1995,10 @@
+         }
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
++    QCA_FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
+     FIELD_GET_MASK(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
+ 
+-    FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
++    QCA_FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
+     sw->ip6_lable_val |= (tmp << 16);
+     FIELD_GET_MASK(IP6_RUL3_M2, IP6LABEL2M, tmp);
+     sw->ip6_lable_mask |= (tmp << 16);
+@@ -2008,21 +2008,21 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP6_LABEL);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
++    QCA_FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
+     if (0x0 != sw->tcp_flag_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
++    QCA_FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
+     if (0x0 != sw->dhcpv6_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV6);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -2049,7 +2049,7 @@
+         sw->udf_mask[i] = ((hw->msk[3 - i / 4]) >> (24 - 8 * (i % 4))) & 0xff;
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+diff -aur a/src/hsl/dess/dess_acl_prv.h b/src/hsl/dess/dess_acl_prv.h
+--- a/src/hsl/dess/dess_acl_prv.h	2023-10-04 11:32:01.000000000 +0300
++++ b/src/hsl/dess/dess_acl_prv.h	2023-11-12 13:29:12.492333623 +0300
+@@ -96,7 +96,7 @@
+     SW_REG_SET_BY_FIELD_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
+                             reg##_##field##_BLEN)
+ 
+-#define FIELD_GET(reg, field, val) \
++#define QCA_FIELD_GET(reg, field, val) \
+     SW_FIELD_GET_BY_REG_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
+                             reg##_##field##_BLEN)
+ 
+diff -aur a/src/hsl/isis/isis_acl_parse.c b/src/hsl/isis/isis_acl_parse.c
+--- a/src/hsl/isis/isis_acl_parse.c	2023-10-04 11:32:01.000000000 +0300
++++ b/src/hsl/isis/isis_acl_parse.c	2023-11-12 13:29:12.464333623 +0300
+@@ -1451,12 +1451,12 @@
+     a_uint32_t mask_en;
+ 
+     /* destnation mac address */
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE2, sw->dest_mac_val.uc[2]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE3, sw->dest_mac_val.uc[3]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE4, sw->dest_mac_val.uc[4]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE5, sw->dest_mac_val.uc[5]);
+-    FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
+-    FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE2, sw->dest_mac_val.uc[2]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE3, sw->dest_mac_val.uc[3]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE4, sw->dest_mac_val.uc[4]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE5, sw->dest_mac_val.uc[5]);
++    QCA_FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
++    QCA_FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
+ 
+     FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
+     FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
+@@ -1470,12 +1470,12 @@
+     }
+ 
+     /* source mac address */
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE0, sw->src_mac_val.uc[0]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE1, sw->src_mac_val.uc[1]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
+-    FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
+-    FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE0, sw->src_mac_val.uc[0]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE1, sw->src_mac_val.uc[1]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
++    QCA_FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
++    QCA_FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
+ 
+     FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
+     FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
+@@ -1489,7 +1489,7 @@
+     }
+ 
+     /* ethernet type */
+-    FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
++    QCA_FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
+     FIELD_GET_MASK(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+     if (0x0 != sw->ethtype_mask)
+     {
+@@ -1505,7 +1505,7 @@
+     }
+ 
+     /* vlan priority */
+-    FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANPRIM, sw->up_mask);
+     if (0x0 != sw->up_mask)
+     {
+@@ -1513,7 +1513,7 @@
+     }
+ 
+     /* vlanid */
+-    FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_mask);
+     FIELD_GET_MASK(MAC_RUL_M4, VIDMSK, mask_en);
+     if (mask_en)
+@@ -1533,14 +1533,14 @@
+     }
+ 
+     /* vlan cfi */
+-    FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
+     if (0x0 != sw->cfi_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CFI);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1554,7 +1554,7 @@
+ {
+     a_uint32_t i, mask_en, data;
+ 
+-    FIELD_GET(EHMAC_RUL_V3, DA_EN, data);
++    QCA_FIELD_GET(EHMAC_RUL_V3, DA_EN, data);
+     if (data)
+     {
+         for (i = 2; i < 6; i++)
+@@ -1574,9 +1574,9 @@
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_DA);
+         }
+ 
+-        FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
++        QCA_FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
+ 
+         FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+         FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+@@ -1606,9 +1606,9 @@
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_SA);
+         }
+ 
+-        FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->dest_mac_val.uc[3]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
++        QCA_FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->dest_mac_val.uc[3]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
+ 
+         FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
+         FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
+@@ -1620,7 +1620,7 @@
+     }
+ 
+     /* ethernet type */
+-    FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+     if (0x0 != sw->ethtype_mask)
+     {
+@@ -1628,17 +1628,17 @@
+     }
+ 
+     /* packet stagged */
+-    FIELD_GET(EHMAC_RUL_V3, STAGGEDV, sw->stagged_val);
+-    FIELD_GET(EHMAC_RUL_V3, STAGGEDM, sw->stagged_mask);
++    QCA_FIELD_GET(EHMAC_RUL_V3, STAGGEDV, sw->stagged_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, STAGGEDM, sw->stagged_mask);
+     if (0x0 != sw->stagged_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_STAGGED);
+     }
+ 
+     /* stag vid */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
+-    FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
++    QCA_FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
+     if (mask_en)
+     {
+         sw->stag_vid_op = FAL_ACL_FIELD_MASK;
+@@ -1656,7 +1656,7 @@
+     }
+ 
+     /* stag priority */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
+     if (0x0 != sw->stag_pri_mask)
+     {
+@@ -1664,7 +1664,7 @@
+     }
+ 
+     /* stag dei */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
+     if (0x0 != sw->stag_dei_mask)
+     {
+@@ -1680,8 +1680,8 @@
+     }
+ 
+     /* ctag vid */
+-    FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
++    QCA_FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
+     sw->ctag_vid_val |= (data << 8);
+     FIELD_GET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, data);
+@@ -1705,7 +1705,7 @@
+     }
+ 
+     /* ctag priority */
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
+     if (0x0 != sw->ctag_pri_mask)
+     {
+@@ -1713,14 +1713,14 @@
+     }
+ 
+     /* ctag dei */
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
+     if (0x0 != sw->ctag_cfi_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_CFI);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1748,21 +1748,21 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP4_SIP);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
+     if (0x0 != sw->ip_proto_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
+     if (0x0 != sw->ip_dscp_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4DPORTM_EN, mask_en);
+     if (mask_en)
+@@ -1786,17 +1786,17 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_L4_DPORT);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, ICMP_EN, icmp_en);
++    QCA_FIELD_GET(IP4_RUL_V3, ICMP_EN, icmp_en);
+     if (icmp_en)
+     {
+-        FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
+         if (0x0 != sw->icmp_type_mask)
+         {
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
+         }
+ 
+-        FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
+         if (0x0 != sw->icmp_code_mask)
+         {
+@@ -1805,7 +1805,7 @@
+     }
+     else
+     {
+-        FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM_EN, mask_en);
+         if (mask_en)
+@@ -1830,28 +1830,28 @@
+         }
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
+     if (0x0 != sw->tcp_flag_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
+     if (0x0 != sw->ripv1_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_RIPV1);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
+     if (0x0 != sw->dhcpv4_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV4);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1875,7 +1875,7 @@
+         }
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1899,7 +1899,7 @@
+         }
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1913,21 +1913,21 @@
+ {
+     a_uint32_t mask_en, icmp6_en, tmp;
+ 
+-    FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
++    QCA_FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
+     FIELD_GET_MASK(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
+     if (0x0 != sw->ip_proto_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
++    QCA_FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
+     FIELD_GET_MASK(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
+     if (0x0 != sw->ip_dscp_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
++    QCA_FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
+     FIELD_GET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, mask_en);
+     if (mask_en)
+@@ -1951,17 +1951,17 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_L4_DPORT);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, ICMP6_EN, icmp6_en);
++    QCA_FIELD_GET(IP6_RUL3_V3, ICMP6_EN, icmp6_en);
+     if (icmp6_en)
+     {
+-        FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
+         if (0x0 != sw->icmp_type_mask)
+         {
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
+         }
+ 
+-        FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
+         if (0x0 != sw->icmp_code_mask)
+         {
+@@ -1970,7 +1970,7 @@
+     }
+     else
+     {
+-        FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, mask_en);
+         if (mask_en)
+@@ -1995,10 +1995,10 @@
+         }
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
++    QCA_FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
+     FIELD_GET_MASK(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
+ 
+-    FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
++    QCA_FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
+     sw->ip6_lable_val |= (tmp << 16);
+     FIELD_GET_MASK(IP6_RUL3_M2, IP6LABEL2M, tmp);
+     sw->ip6_lable_mask |= (tmp << 16);
+@@ -2008,21 +2008,21 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP6_LABEL);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
++    QCA_FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
+     if (0x0 != sw->tcp_flag_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
++    QCA_FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
+     if (0x0 != sw->dhcpv6_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV6);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -2049,7 +2049,7 @@
+         sw->udf_mask[i] = ((hw->msk[3 - i / 4]) >> (24 - 8 * (i % 4))) & 0xff;
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+diff -aur a/src/hsl/isis/isis_acl_prv.h b/src/hsl/isis/isis_acl_prv.h
+--- a/src/hsl/isis/isis_acl_prv.h	2023-10-04 11:32:01.000000000 +0300
++++ b/src/hsl/isis/isis_acl_prv.h	2023-11-12 13:29:12.464333623 +0300
+@@ -95,7 +95,7 @@
+     SW_REG_SET_BY_FIELD_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
+                             reg##_##field##_BLEN)
+ 
+-#define FIELD_GET(reg, field, val) \
++#define QCA_FIELD_GET(reg, field, val) \
+     SW_FIELD_GET_BY_REG_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
+                             reg##_##field##_BLEN)
+ 
+diff -aur a/src/hsl/isisc/isisc_acl_parse.c b/src/hsl/isisc/isisc_acl_parse.c
+--- a/src/hsl/isisc/isisc_acl_parse.c	2023-10-04 11:32:01.000000000 +0300
++++ b/src/hsl/isisc/isisc_acl_parse.c	2023-11-12 13:29:12.456333623 +0300
+@@ -1451,12 +1451,12 @@
+     a_uint32_t mask_en;
+ 
+     /* destnation mac address */
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE2, sw->dest_mac_val.uc[2]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE3, sw->dest_mac_val.uc[3]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE4, sw->dest_mac_val.uc[4]);
+-    FIELD_GET(MAC_RUL_V0, DAV_BYTE5, sw->dest_mac_val.uc[5]);
+-    FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
+-    FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE2, sw->dest_mac_val.uc[2]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE3, sw->dest_mac_val.uc[3]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE4, sw->dest_mac_val.uc[4]);
++    QCA_FIELD_GET(MAC_RUL_V0, DAV_BYTE5, sw->dest_mac_val.uc[5]);
++    QCA_FIELD_GET(MAC_RUL_V1, DAV_BYTE0, sw->dest_mac_val.uc[0]);
++    QCA_FIELD_GET(MAC_RUL_V1, DAV_BYTE1, sw->dest_mac_val.uc[1]);
+ 
+     FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE2, sw->dest_mac_mask.uc[2]);
+     FIELD_GET_MASK(MAC_RUL_M0, DAM_BYTE3, sw->dest_mac_mask.uc[3]);
+@@ -1470,12 +1470,12 @@
+     }
+ 
+     /* source mac address */
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE0, sw->src_mac_val.uc[0]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE1, sw->src_mac_val.uc[1]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
+-    FIELD_GET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
+-    FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
+-    FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE0, sw->src_mac_val.uc[0]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE1, sw->src_mac_val.uc[1]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE2, sw->src_mac_val.uc[2]);
++    QCA_FIELD_GET(MAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
++    QCA_FIELD_GET(MAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
++    QCA_FIELD_GET(MAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
+ 
+     FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE0, sw->src_mac_mask.uc[0]);
+     FIELD_GET_MASK(MAC_RUL_M2, SAM_BYTE1, sw->src_mac_mask.uc[1]);
+@@ -1489,7 +1489,7 @@
+     }
+ 
+     /* ethernet type */
+-    FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
++    QCA_FIELD_GET(MAC_RUL_V3, ETHTYPV, sw->ethtype_val);
+     FIELD_GET_MASK(MAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+     if (0x0 != sw->ethtype_mask)
+     {
+@@ -1505,7 +1505,7 @@
+     }
+ 
+     /* vlan priority */
+-    FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANPRIV, sw->up_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANPRIM, sw->up_mask);
+     if (0x0 != sw->up_mask)
+     {
+@@ -1513,7 +1513,7 @@
+     }
+ 
+     /* vlanid */
+-    FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANIDV, sw->vid_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANIDM, sw->vid_mask);
+     FIELD_GET_MASK(MAC_RUL_M4, VIDMSK, mask_en);
+     if (mask_en)
+@@ -1533,14 +1533,14 @@
+     }
+ 
+     /* vlan cfi */
+-    FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
++    QCA_FIELD_GET(MAC_RUL_V3, VLANCFIV, sw->cfi_val);
+     FIELD_GET_MASK(MAC_RUL_M3, VLANCFIM, sw->cfi_mask);
+     if (0x0 != sw->cfi_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CFI);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1554,7 +1554,7 @@
+ {
+     a_uint32_t i, mask_en, data;
+ 
+-    FIELD_GET(EHMAC_RUL_V3, DA_EN, data);
++    QCA_FIELD_GET(EHMAC_RUL_V3, DA_EN, data);
+     if (data)
+     {
+         for (i = 2; i < 6; i++)
+@@ -1574,9 +1574,9 @@
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_DA);
+         }
+ 
+-        FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
++        QCA_FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->src_mac_val.uc[3]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->src_mac_val.uc[4]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->src_mac_val.uc[5]);
+ 
+         FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->src_mac_mask.uc[3]);
+         FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->src_mac_mask.uc[4]);
+@@ -1606,9 +1606,9 @@
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_SA);
+         }
+ 
+-        FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->dest_mac_val.uc[3]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
+-        FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
++        QCA_FIELD_GET(EHMAC_RUL_V2, SAV_BYTE3, sw->dest_mac_val.uc[3]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE4, sw->dest_mac_val.uc[4]);
++        QCA_FIELD_GET(EHMAC_RUL_V1, SAV_BYTE5, sw->dest_mac_val.uc[5]);
+ 
+         FIELD_GET_MASK(EHMAC_RUL_M2, SAM_BYTE3, sw->dest_mac_mask.uc[3]);
+         FIELD_GET_MASK(EHMAC_RUL_M1, SAM_BYTE4, sw->dest_mac_mask.uc[4]);
+@@ -1620,7 +1620,7 @@
+     }
+ 
+     /* ethernet type */
+-    FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, ETHTYPV, sw->ethtype_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, ETHTYPM, sw->ethtype_mask);
+     if (0x0 != sw->ethtype_mask)
+     {
+@@ -1628,17 +1628,17 @@
+     }
+ 
+     /* packet stagged */
+-    FIELD_GET(EHMAC_RUL_V3, STAGGEDV, sw->stagged_val);
+-    FIELD_GET(EHMAC_RUL_V3, STAGGEDM, sw->stagged_mask);
++    QCA_FIELD_GET(EHMAC_RUL_V3, STAGGEDV, sw->stagged_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, STAGGEDM, sw->stagged_mask);
+     if (0x0 != sw->stagged_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_STAGGED);
+     }
+ 
+     /* stag vid */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_VIDV, sw->stag_vid_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_VIDM, sw->stag_vid_mask);
+-    FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
++    QCA_FIELD_GET(EHMAC_RUL_V3, SVIDMSK, mask_en);
+     if (mask_en)
+     {
+         sw->stag_vid_op = FAL_ACL_FIELD_MASK;
+@@ -1656,7 +1656,7 @@
+     }
+ 
+     /* stag priority */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_PRIV, sw->stag_pri_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_PRIM, sw->stag_pri_mask);
+     if (0x0 != sw->stag_pri_mask)
+     {
+@@ -1664,7 +1664,7 @@
+     }
+ 
+     /* stag dei */
+-    FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
++    QCA_FIELD_GET(EHMAC_RUL_V2, STAG_DEIV, sw->stag_dei_val);
+     FIELD_GET_MASK(EHMAC_RUL_M2, STAG_DEIM, sw->stag_dei_mask);
+     if (0x0 != sw->stag_dei_mask)
+     {
+@@ -1680,8 +1680,8 @@
+     }
+ 
+     /* ctag vid */
+-    FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
++    QCA_FIELD_GET(EHMAC_RUL_V2, CTAG_VIDLV, sw->ctag_vid_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_VIDHV, data);
+     sw->ctag_vid_val |= (data << 8);
+     FIELD_GET_MASK(EHMAC_RUL_M2, CTAG_VIDLM, sw->ctag_vid_mask);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_VIDHM, data);
+@@ -1705,7 +1705,7 @@
+     }
+ 
+     /* ctag priority */
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_PRIV, sw->ctag_pri_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_PRIM, sw->ctag_pri_mask);
+     if (0x0 != sw->ctag_pri_mask)
+     {
+@@ -1713,14 +1713,14 @@
+     }
+ 
+     /* ctag dei */
+-    FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
++    QCA_FIELD_GET(EHMAC_RUL_V3, CTAG_CFIV, sw->ctag_cfi_val);
+     FIELD_GET_MASK(EHMAC_RUL_M3, CTAG_CFIM, sw->ctag_cfi_mask);
+     if (0x0 != sw->ctag_cfi_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_MAC_CTAG_CFI);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1748,21 +1748,21 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP4_SIP);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4PROTV, sw->ip_proto_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4PROTM, sw->ip_proto_mask);
+     if (0x0 != sw->ip_proto_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4DSCPV, sw->ip_dscp_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4DSCPM, sw->ip_dscp_mask);
+     if (0x0 != sw->ip_dscp_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
++    QCA_FIELD_GET(IP4_RUL_V2, IP4DPORTV, sw->dest_l4port_val);
+     FIELD_GET_MASK(IP4_RUL_M2, IP4DPORTM, sw->dest_l4port_mask);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4DPORTM_EN, mask_en);
+     if (mask_en)
+@@ -1786,17 +1786,17 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_L4_DPORT);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, ICMP_EN, icmp_en);
++    QCA_FIELD_GET(IP4_RUL_V3, ICMP_EN, icmp_en);
+     if (icmp_en)
+     {
+-        FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4ICMPTYPV, sw->icmp_type_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPTYPM, sw->icmp_type_mask);
+         if (0x0 != sw->icmp_type_mask)
+         {
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
+         }
+ 
+-        FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4ICMPCODEV, sw->icmp_code_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4ICMPCODEM, sw->icmp_code_mask);
+         if (0x0 != sw->icmp_code_mask)
+         {
+@@ -1805,7 +1805,7 @@
+     }
+     else
+     {
+-        FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
++        QCA_FIELD_GET(IP4_RUL_V3, IP4SPORTV, sw->src_l4port_val);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM, sw->src_l4port_mask);
+         FIELD_GET_MASK(IP4_RUL_M3, IP4SPORTM_EN, mask_en);
+         if (mask_en)
+@@ -1830,28 +1830,28 @@
+         }
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4TCPFLAGV, sw->tcp_flag_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4TCPFLAGM, sw->tcp_flag_mask);
+     if (0x0 != sw->tcp_flag_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4RIPV, sw->ripv1_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4RIPM, sw->ripv1_mask);
+     if (0x0 != sw->ripv1_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_RIPV1);
+     }
+ 
+-    FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
++    QCA_FIELD_GET(IP4_RUL_V3, IP4DHCPV, sw->dhcpv4_val);
+     FIELD_GET_MASK(IP4_RUL_M3, IP4DHCPM, sw->dhcpv4_mask);
+     if (0x0 != sw->dhcpv4_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV4);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1875,7 +1875,7 @@
+         }
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1899,7 +1899,7 @@
+         }
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -1913,21 +1913,21 @@
+ {
+     a_uint32_t mask_en, icmp6_en, tmp;
+ 
+-    FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
++    QCA_FIELD_GET(IP6_RUL3_V0, IP6PROTV, sw->ip_proto_val);
+     FIELD_GET_MASK(IP6_RUL3_M0, IP6PROTM, sw->ip_proto_mask);
+     if (0x0 != sw->ip_proto_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_PROTO);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
++    QCA_FIELD_GET(IP6_RUL3_V0, IP6DSCPV, sw->ip_dscp_val);
+     FIELD_GET_MASK(IP6_RUL3_M0, IP6DSCPM, sw->ip_dscp_mask);
+     if (0x0 != sw->ip_dscp_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP_DSCP);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
++    QCA_FIELD_GET(IP6_RUL3_V2, IP6DPORTV, sw->dest_l4port_val);
+     FIELD_GET_MASK(IP6_RUL3_M2, IP6DPORTM, sw->dest_l4port_mask);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6DPORTM_EN, mask_en);
+     if (mask_en)
+@@ -1951,17 +1951,17 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_L4_DPORT);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, ICMP6_EN, icmp6_en);
++    QCA_FIELD_GET(IP6_RUL3_V3, ICMP6_EN, icmp6_en);
+     if (icmp6_en)
+     {
+-        FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6ICMPTYPV, sw->icmp_type_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPTYPM, sw->icmp_type_mask);
+         if (0x0 != sw->icmp_type_mask)
+         {
+             FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_ICMP_TYPE);
+         }
+ 
+-        FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6ICMPCODEV, sw->icmp_code_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6ICMPCODEM, sw->icmp_code_mask);
+         if (0x0 != sw->icmp_code_mask)
+         {
+@@ -1970,7 +1970,7 @@
+     }
+     else
+     {
+-        FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
++        QCA_FIELD_GET(IP6_RUL3_V3, IP6SPORTV, sw->src_l4port_val);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM, sw->src_l4port_mask);
+         FIELD_GET_MASK(IP6_RUL3_M3, IP6SPORTM_EN, mask_en);
+         if (mask_en)
+@@ -1995,10 +1995,10 @@
+         }
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
++    QCA_FIELD_GET(IP6_RUL3_V1, IP6LABEL1V, sw->ip6_lable_val);
+     FIELD_GET_MASK(IP6_RUL3_M1, IP6LABEL1M, sw->ip6_lable_mask);
+ 
+-    FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
++    QCA_FIELD_GET(IP6_RUL3_V2, IP6LABEL2V, tmp);
+     sw->ip6_lable_val |= (tmp << 16);
+     FIELD_GET_MASK(IP6_RUL3_M2, IP6LABEL2M, tmp);
+     sw->ip6_lable_mask |= (tmp << 16);
+@@ -2008,21 +2008,21 @@
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_IP6_LABEL);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
++    QCA_FIELD_GET(IP6_RUL3_V3, IP6TCPFLAGV, sw->tcp_flag_val);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6TCPFLAGM, sw->tcp_flag_mask);
+     if (0x0 != sw->tcp_flag_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_TCP_FLAG);
+     }
+ 
+-    FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
++    QCA_FIELD_GET(IP6_RUL3_V3, IP6DHCPV, sw->dhcpv6_val);
+     FIELD_GET_MASK(IP6_RUL3_M3, IP6DHCPM, sw->dhcpv6_mask);
+     if (0x0 != sw->dhcpv6_mask)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_DHCPV6);
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, mask_en);
+     if (mask_en)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+@@ -2049,7 +2049,7 @@
+         sw->udf_mask[i] = ((hw->msk[3 - i / 4]) >> (24 - 8 * (i % 4))) & 0xff;
+     }
+ 
+-    FIELD_GET(MAC_RUL_V4, RULE_INV, i);
++    QCA_FIELD_GET(MAC_RUL_V4, RULE_INV, i);
+     if (i)
+     {
+         FAL_FIELD_FLG_SET(sw->field_flg, FAL_ACL_FIELD_INVERSE_ALL);
+diff -aur a/src/hsl/isisc/isisc_acl_prv.h b/src/hsl/isisc/isisc_acl_prv.h
+--- a/src/hsl/isisc/isisc_acl_prv.h	2023-10-04 11:32:01.000000000 +0300
++++ b/src/hsl/isisc/isisc_acl_prv.h	2023-11-12 13:29:12.456333623 +0300
+@@ -101,7 +101,7 @@
+     SW_REG_SET_BY_FIELD_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
+                             reg##_##field##_BLEN)
+ 
+-#define FIELD_GET(reg, field, val) \
++#define QCA_FIELD_GET(reg, field, val) \
+     SW_FIELD_GET_BY_REG_U32(hw->vlu[reg], val, reg##_##field##_BOFFSET, \
+                             reg##_##field##_BLEN)
+ 
