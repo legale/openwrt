@@ -49,11 +49,16 @@ MAKE_FLAGS+= \
 	ISISC_ENABLE=disable IN_QCA803X_PHY=FALSE \
 	$(LNX_CONFIG_OPTS)
 
+
 ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq807x")
     MAKE_FLAGS+= CHIP_TYPE=HPPE
 else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
     MAKE_FLAGS+= CHIP_TYPE=CPPE
 endif
+
+#@$(foreach v, $(.VARIABLES), \
+#	$(info $(v) = $($(v))))
+#$(error END)
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/qca-ssdk
