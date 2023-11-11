@@ -1,11 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qca-ssdk
-<<<<<<< HEAD
 PKG_RELEASE:=4
-=======
-PKG_RELEASE:=2
->>>>>>> dfdd6bfda5 (qca-ssdk: add support for ipq60xx)
 
 PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/qca-ssdk.git
 PKG_SOURCE_PROTO:=git
@@ -54,11 +50,13 @@ MAKE_FLAGS+= \
 
 ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq807x")
     MAKE_FLAGS+= CHIP_TYPE=HPPE
+else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
+    MAKE_FLAGS+= CHIP_TYPE=CPPE 
 endif
 
-ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
-    MAKE_FLAGS+= CHIP_TYPE=CPPE
-endif
+#@$(foreach v, $(.VARIABLES), \
+#	$(info $(v) = $($(v))))
+#$(error END)
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/qca-ssdk
