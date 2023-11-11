@@ -14,6 +14,11 @@ PKG_FLAGS:=nonshared
 
 include $(INCLUDE_DIR)/package.mk
 
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	cp board/* $(PKG_BUILD_DIR)
+endef
+
 define Build/Compile
 endef
 

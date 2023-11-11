@@ -23,6 +23,13 @@ define Device/UbiFit
 	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 
+define Image/Prepare
+	# Build .dtb for all boards we may run on
+	$(foreach dts,$(DEVICE_DTS_LIST),
+		$(call Image/BuildDTB,$(DTS_DIR)/$(dts).dts,$(DTS_DIR)/$(dts).dtb)
+	)
+endef
+
 define Device/buffalo_wxr-5950ax12
 	$(call Device/FitImage)
 	DEVICE_VENDOR := Buffalo
@@ -185,9 +192,12 @@ define Device/yuncore_ax880
 	PAGESIZE := 2048
 	DEVICE_DTS_CONFIG := config@hk09
 	SOC := ipq8072
+	#KERNEL_INITRAMFS = kernel-bin | libdeflate-gzip | fit gzip $$(KDIR)/image-$$(DEVICE_DTS)-smem.dtb
 	DEVICE_PACKAGES := ipq-wifi-yuncore_ax880
 	IMAGES += factory.bin
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+	
+	# this dtb for initramfs image
+	#$$(eval $$(call Image/BuildDTB/sub,$$(DEVICE_DTS_DIR),$$(DEVICE_DTS)-smem.dts,$$(DTC_FLAGS) $$(DEVICE_DTC_FLAGS)))	
 endef
 TARGET_DEVICES += yuncore_ax880
-
