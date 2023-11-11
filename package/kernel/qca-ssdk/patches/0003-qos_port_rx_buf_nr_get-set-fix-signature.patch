@@ -1,0 +1,100 @@
+Only in b/include/hsl: .hsl_api.h.swp
+diff -aur a/Makefile b/Makefile
+--- a/Makefile	2023-06-06 10:21:48.000000000 +0300
++++ b/Makefile	2023-11-08 01:58:41.206664137 +0300
+@@ -17,7 +17,7 @@
+ ####################################################################
+ all: $(BIN_DIR) kslib
+ 	mkdir -p ./temp/;cd ./temp;cp ../build/bin/ssdk_ks_km.a ./;ar -x ssdk_ks_km.a; cp ../ko_Makefile ./Makefile;
+-	make -C $(SYS_PATH) M=$(PRJ_PATH)/temp/ CROSS_COMPILE=$(TOOLPREFIX) modules
++	make -j $(shell nproc) -C $(SYS_PATH) M=$(PRJ_PATH)/temp/ CROSS_COMPILE=$(TOOLPREFIX) modules
+ 	cp $(PRJ_PATH)/temp/Module.symvers $(PRJ_PATH)/Module.symvers;
+ 	cp temp/*.ko build/bin;
+ 	rm -Rf ./temp/*.o ./temp/*.ko ./temp/*.a
+@@ -28,7 +28,7 @@
+ ####################################################################
+ modules: $(BIN_DIR) kslib_c
+ 	mkdir -p ./temp/;cp * ./temp -a;cd ./temp;cp ../Makefile.modules ./Makefile;
+-	make -C $(SYS_PATH) M=$(PRJ_PATH)/temp $(LNX_MAKEOPTS) modules
++	make -j $(shell nproc) -C $(SYS_PATH) M=$(PRJ_PATH)/temp $(LNX_MAKEOPTS) modules
+ 	cp $(PRJ_PATH)/temp/Module.symvers $(PRJ_PATH)/Module.symvers;
+ 	cp temp/*.ko build/bin;
+ 	rm -Rf ./temp/*.o ./temp/*.ko ./temp/*.a
+diff -aur a/src/hsl/dess/dess_qos.c b/src/hsl/dess/dess_qos.c
+--- a/src/hsl/dess/dess_qos.c	2023-06-06 10:21:48.000000000 +0300
++++ b/src/hsl/dess/dess_qos.c	2023-11-08 00:42:58.266745492 +0300
+@@ -1164,7 +1164,7 @@
+  */
+ HSL_LOCAL sw_error_t
+ dess_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+-                            a_uint32_t * number)
++                            a_uint32_t * number, a_uint32_t *react_num)
+ {
+     sw_error_t rv;
+ 
+@@ -1183,7 +1183,7 @@
+  */
+ HSL_LOCAL sw_error_t
+ dess_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+-                            a_uint32_t * number)
++                            a_uint32_t * number, a_uint32_t *react_num)
+ {
+     sw_error_t rv;
+ 
+diff -aur a/src/hsl/isis/isis_qos.c b/src/hsl/isis/isis_qos.c
+--- a/src/hsl/isis/isis_qos.c	2023-06-06 10:21:48.000000000 +0300
++++ b/src/hsl/isis/isis_qos.c	2023-11-08 00:51:09.478736695 +0300
+@@ -967,7 +967,7 @@
+  */
+ HSL_LOCAL sw_error_t
+ isis_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+-                            a_uint32_t * number)
++                            a_uint32_t * number, a_uint32_t *react_num)
+ {
+     sw_error_t rv;
+ 
+@@ -986,7 +986,7 @@
+  */
+ HSL_LOCAL sw_error_t
+ isis_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+-                            a_uint32_t * number)
++                            a_uint32_t * number, a_uint32_t *react_num)
+ {
+     sw_error_t rv;
+ 
+diff -aur a/src/hsl/shiva/shiva_qos.c b/src/hsl/shiva/shiva_qos.c
+--- a/src/hsl/shiva/shiva_qos.c	2023-06-06 10:21:48.000000000 +0300
++++ b/src/hsl/shiva/shiva_qos.c	2023-11-08 01:08:18.350718270 +0300
+@@ -974,7 +974,7 @@
+  */
+ HSL_LOCAL sw_error_t
+ shiva_qos_port_rx_buf_nr_set(a_uint32_t dev_id, fal_port_t port_id,
+-                             a_uint32_t * number)
++                             a_uint32_t * number, a_uint32_t *react_num)
+ {
+     sw_error_t rv;
+ 
+@@ -993,7 +993,7 @@
+  */
+ HSL_LOCAL sw_error_t
+ shiva_qos_port_rx_buf_nr_get(a_uint32_t dev_id, fal_port_t port_id,
+-                             a_uint32_t * number)
++                             a_uint32_t * number, a_uint32_t *react_num)
+ {
+     sw_error_t rv;
+ 
+diff -aur a/src/init/ssdk_init.c b/src/init/ssdk_init.c
+--- a/src/init/ssdk_init.c	2023-06-06 10:21:48.000000000 +0300
++++ b/src/init/ssdk_init.c	2023-11-08 01:41:15.626682861 +0300
+@@ -179,6 +179,11 @@
+ #ifdef DESS
+ static bool qca_dess_rfs_registered = false;
+ #endif
++
++#ifndef ioremap_nocache
++#define ioremap_nocache ioremap
++#endif
++
+ /*qca808x_start*/
+ struct qca_phy_priv **qca_phy_priv_global;
+ 
