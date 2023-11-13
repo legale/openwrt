@@ -1,35 +1,35 @@
 // SPDX-License-Identifier: MIT, GPL-2.0 or later
 /* Copyright (c) 2023, Ruslan Isaev <legale.legale@gmail.com> */
 
+
 /dts-v1/;
 
 #include "ipq6018.dtsi"
-//#include "ipq6018-512m.dtsi"
-//#include "ipq6018-upstreamable.dtsi"
-//#include "ipq6018-regulator-mp5496.dtsi"
 #include "ipq6018-ess.dtsi"
 #include "ipq6018-wifi.dtsi"
-
-#include <dt-bindings/input/input.h>
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 
 / {
 	model = "Yuncore AX840";
-	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018";
-	
+	compatible = "yuncore,ax840", "qcom,ipq6018", "qcom,ipq6018-cp03";
+
 	aliases {
-		ethernet0 = "/soc/dp5";
-		ethernet1 = "/soc/dp4";
 		serial0 = &blsp1_uart3;
 		led-boot = &led_system;
 		led-failsafe = &led_system;
 		led-running = &led_system;
 		led-upgrade = &led_system;
+		/*
+		 * Aliases as required by u-boot
+		 * to patch MAC addresses
+		 */
+		ethernet0 = &dp5;
+		ethernet1 = &dp4;
 	};
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-		bootargs-append = " root=/dev/ubiblock0_1";
 	};
 
 	keys {
@@ -40,163 +40,80 @@
 			gpios = <&tlmm 19 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_RESTART>;
 		};
-	};
+		leds {
+			compatible = "gpio-leds";
+			pinctrl-0 = <&leds_pins>;
+			pinctrl-names = "default";
 
-	leds {
-		compatible = "gpio-leds";
+			led_system: system {
+				label = "green:system";
+				gpio = <&tlmm 37 GPIO_ACTIVE_HIGH>;
+			};
 
-		led_system: led_system {
-			label = "system";
-			color = "red";
-			gpios = <&tlmm 37 GPIO_ACTIVE_HIGH>;
+			wlan2g {
+				label = "blue:wlan2g";
+				gpio = <&tlmm 35 GPIO_ACTIVE_HIGH>;
+			};
+
+			wlan5g {
+				label = "red:wlan5g";
+				gpio = <&tlmm 32 GPIO_ACTIVE_HIGH>;
+			};
 		};
-
-		led_wlan2g: led_wlan2g {
-			label = "wlan2g";
-			color = "green";
-			gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
-		};
-
-		led_wlan5g: led_wlan5g {
-			label = "wlan5g";
-			color = "blue";
-			gpios = <&tlmm 32 GPIO_ACTIVE_HIGH>;
-		};
-	};
-};
-
-
-&mdio {
-	status = "okay";
-
-	pinctrl-0 = <&mdio_pins>;
-	pinctrl-names = "default";
-	phy-reset-gpio = <&tlmm 75 GPIO_ACTIVE_LOW>;
-
-	qca8075_3: ethernet-phy@0 {
-		reg = <3>;
-	};
-	qca8075_4: ethernet-phy@1 {
-		reg = <4>;
 	};
 };
 
 &tlmm {
+	i2c_1_pins: i2c-1-state {
+		pins = "gpio42", "gpio43";
+		function = "blsp2_i2c";
+		drive-strength = <8>;
+	};
 
-	mdio_pins: mdio_pinmux {
-		mux_0 {
-			pins = "gpio64";
+	mdio_pins: mdio-state {
+		mdc-pins {
+			bias-pull-up;
+			drive-strength = <8>;
 			function = "mdc";
-			drive-strength = <8>;
-			bias-pull-up;
+			pins = "gpio64";
 		};
 
-		mux_1 {
-			pins = "gpio65";
+		mdio-pins {
+			bias-pull-up;
+			drive-strength = <8>;
 			function = "mdio";
-			drive-strength = <8>;
-			bias-pull-up;
+			pins = "gpio65";
 		};
 
-		mux_2 {
-			pins = "gpio75";
+		gpio-pins {
+			bias-pull-up;
 			function = "gpio";
-			bias-pull-up;
+			pins = "gpio75";
 		};
 	};
 
-};
-
-&soc {
-	dp4 {
-		phy-handle = <&qca8075_3>;
-		label = "lan";
-		status = "okay";
-	};
-
-	dp5 {
-		phy-handle = <&qca8075_4>;
-		label = "wan";
-		status = "okay";
-	};
-};
-
-&switch {
-	status = "okay";
-	switch_cpu_bmp =   <0x01>; /* cpu port bitmap */
-	switch_lan_bmp =   <0x10>; /* lan port bitmap */
-	switch_wan_bmp =   <0x20>; /* wan port bitmap */
-	switch_inner_bmp = <0x80>; /*inner port bitmap*/
-	switch_mac_mode =  <0x00>; /* mac mode for uniphy instance0*/
-	switch_mac_mode1 = <0xff>; /* mac mode for uniphy instance1*/
-	switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
-
-	qcom,port_phyinfo {
-		port@3 {
-			port_id = <4>;
-			phy_address = <3>;
+	leds_pins: leds_pins {
+		led_blue {
+			pins = "gpio35";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
 		};
 
-		port@4 {
-			port_id = <5>;
-			phy_address = <4>;
+		led_green {
+			pins = "gpio37";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+
+		led_red {
+			pins = "gpio32";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-pull-down;
 		};
 	};
-};
-
-&crypto {
-	compatible = "qcom,crypto-v5.1";
-	reg = <0x0 0x0073a000 0x0 0x6000>;
-	clocks = <&gcc GCC_CRYPTO_AHB_CLK>,
-		<&gcc GCC_CRYPTO_AXI_CLK>,
-		<&gcc GCC_CRYPTO_CLK>;
-	clock-names = "iface", "bus", "core";
-	dmas = <&cryptobam 2>, <&cryptobam 3>;
-	dma-names = "rx", "tx";
-	status = "okay";
-};
-
-&qpic_nand {
-	status = "okay";
-
-	nand@0 {
-		reg = <0>;
-		nand-ecc-strength = <4>;
-		nand-ecc-step-size = <512>;
-		nand-bus-width = <8>;
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@0 {
-				label = "rootfs_1";
-				reg = <0x0000000 0x3400000>;
-			};
-
-			partition@3400000 {
-				label = "0:wififw";
-				reg = <0x3400000 0x800000>;
-				read-only;
-			};
-
-			rootfs: partition@3c00000 {
-				label = "rootfs";
-				reg = <0x3c00000 0x3400000>;
-			};
-
-			partition@7000000 {
-				label = "0:wififw_1";
-				reg = <0x7000000 0x800000>;
-				read-only;
-			};
-		};
-	};
-};
-
-&psci {
-	status = "okay";
 };
 
 &blsp1_uart3 {
@@ -205,21 +122,92 @@
 	status = "okay";
 };
 
+&blsp1_i2c3 {
+	pinctrl-0 = <&i2c_1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
 &qpic_bam {
 	status = "okay";
+};
+
+&qpic_nand {
+	status = "okay";
+
+	nand@0 {
+		reg = <0>;
+
+		nand-ecc-strength = <4>;
+		nand-ecc-step-size = <512>;
+		nand-bus-width = <8>;
+
+		partitions {
+			compatible = "qcom,smem-part";
+		};
+	};
+};
+
+&ssphy_0 {
+	status = "okay";
+};
+
+&mdio {
+	status = "okay";
+
+	pinctrl-0 = <&mdio_pins>;
+	pinctrl-names = "default";
+	reset-gpios = <&tlmm 75 GPIO_ACTIVE_LOW>;
+
+	qca8075_3: ethernet-phy@3 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <3>;
+	};
+
+	qca8075_4: ethernet-phy@4 {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <4>;
+	};
+};
+
+&switch {
+	switch_cpu_bmp = <0x1>;   /* cpu port bitmap */
+	switch_lan_bmp = <0x1e>;  /* lan port bitmap */
+	switch_wan_bmp = <0x20>;  /* wan port bitmap */
+	switch_inner_bmp = <0xc0>;/*inner port bitmap*/
+	switch_mac_mode = <0x0>;  /* mac mode for uniphy instance0*/
+	switch_mac_mode1 = <0xff>;/* mac mode for uniphy instance1*/
+	switch_mac_mode2 = <0xff>;/* mac mode for uniphy instance2*/
+	status = "okay";
+
+	qcom,port_phyinfo {
+		port@3 {
+			port_id = <4>;
+			phy_address = <3>;
+		};
+		port@4 {
+			port_id = <5>;
+			phy_address = <4>;
+		};
+	};
 };
 
 &edma {
 	status = "okay";
 };
 
-&qusb_phy_1 {
-	status = "disabled";
+&dp4 {
+	status = "okay";
+	phy-handle = <&qca8075_3>;
+	label = "lan";
 };
 
-&usb2 {
-	status = "disabled";
+&dp5 {
+	status = "okay";
+	phy-handle = <&qca8075_4>;
+	label = "wan";
 };
+
 
 &wifi {
 	status = "okay";
