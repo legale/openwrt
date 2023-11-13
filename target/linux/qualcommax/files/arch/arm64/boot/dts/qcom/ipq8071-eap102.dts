@@ -11,7 +11,10 @@
 
 / {
 	model = "Edgecore EAP102";
-	compatible = "edgecore,eap102", "qcom,ipq8074";
+	compatible = "edgecore,eap102", "qcom,ipq8074-ac02", "qcom,ipq8074";
+//	qcom,board-id = <0x08 0>;
+//	qcom,msm-id = <0x178 0>;
+//	qcom,pmic-id = <0 0 0 0>;
 
 	aliases {
 		serial0 = &blsp1_uart5;
@@ -21,9 +24,9 @@
 		led-running = &led_system_green;
 		led-upgrade = &led_system_green;
 		/* Aliases as required by u-boot to patch MAC addresses */
-		ethernet0 = &dp5;
-		ethernet1 = &dp6;
-		label-mac-device = &dp5;
+		ethernet0 = &dp6;
+		ethernet1 = &dp5;
+		label-mac-device = &dp6;
 	};
 
 	chosen {
@@ -47,24 +50,28 @@
 		compatible = "gpio-leds";
 
 		led_wanpoe {
-			label = "green:wanpoe";
+			label = "wanpoe";
+			color = "green";
 			gpios = <&tlmm 46 GPIO_ACTIVE_HIGH>;
 		};
 
 		led_wlan2g {
-			label = "green:wlan2g";
-			gpio = <&tlmm 47 GPIO_ACTIVE_HIGH>;
+			label = "wlan2g";
+			color = "green";
+			gpios = <&tlmm 47 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "phy1radio";
 		};
 
 		led_wlan5g {
-			label = "green:wlan5g";
-			gpio = <&tlmm 48 GPIO_ACTIVE_HIGH>;
+			label = "wlan5g";
+			color = "green";
+			gpios = <&tlmm 48 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "phy0radio";
 		};
 
 		led_system_green: led_system {
-			label = "green:power";
+			label = "system";
+			color = "green";
 			gpios = <&tlmm 50 GPIO_ACTIVE_HIGH>;
 		};
 	};
@@ -323,7 +330,6 @@
 
 &mdio {
 	status = "okay";
-
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
 
@@ -343,8 +349,9 @@
 &switch {
 	status = "okay";
 
-	switch_lan_bmp = <ESS_PORT5>; /* lan port bitmap */
-	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+	switch_lan_bmp = <0x3e>; /* lan port bitmap */
+	switch_wan_bmp = <0x40>; /* wan port bitmap */
 	switch_mac_mode = <0xff>; /* mac mode for uniphy instance0*/
 	switch_mac_mode1 = <0xf>; /* mac mode for uniphy instance1*/
 	switch_mac_mode2 = <0xf>; /* mac mode for uniphy instance2*/
@@ -371,14 +378,22 @@
 
 &dp5 {
 	status = "okay";
-	phy-handle = <&qca8081_28>;
-	label = "wan";
+	phy-handle = <&qca8081_24>;
+	label = "lan";
+	qcom,link-poll = <1>;
+	qcom,id = <5>;
+	qcom,phy-mdio-addr = <18>;
+	reg = <0x3a001a00 0x200>;
 };
 
 &dp6 {
 	status = "okay";
-	phy-handle = <&qca8081_24>;
-	label = "lan";
+	phy-handle = <&qca8081_28>;
+	label = "wan";
+	qcom,link-poll = <1>;
+	qcom,id = <6>;
+	qcom,phy-mdio-addr = <28>;
+	reg = <0x3a001800 0x200>;
 };
 
 &wifi {
