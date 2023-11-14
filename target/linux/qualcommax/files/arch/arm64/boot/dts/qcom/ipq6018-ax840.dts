@@ -4,6 +4,8 @@
 
 /dts-v1/;
 
+#define __IPQ_MEM_PROFILE_512_MB__ 1
+
 #include "ipq6018.dtsi"
 #include "ipq6018-ess.dtsi"
 #include "ipq6018-wifi.dtsi"
@@ -12,7 +14,7 @@
 
 / {
 	model = "Yuncore AX840";
-	compatible = "yuncore,ax840", "qcom,ipq6018", "qcom,ipq6018-cp03";
+	compatible = "yuncore,ax840", "qcom,ipq6018", "qcom,ipq6018-cp03-c1";
 
 	aliases {
 		serial0 = &blsp1_uart3;
@@ -30,6 +32,7 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
+		bootargs-append = " root=/dev/ubiblock0_1";
 	};
 
 	keys {
