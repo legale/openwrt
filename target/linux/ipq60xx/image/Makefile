@@ -14,8 +14,8 @@ define Device/Default
 	BLOCKSIZE := 128k
  	PAGESIZE := 2048
 	KERNEL_NAME := Image
-	KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-	KERNEL_INITRAMFS = kernel-bin | fit none $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb	
+	KERNEL =           kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb	
 endef
 
 include $(SUBTARGET).mk
