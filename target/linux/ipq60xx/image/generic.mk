@@ -18,13 +18,14 @@ endef
 
 define Device/UbiFit
 	KERNEL_IN_UBI := 1
-	IMAGES := nand-factory.ubi nand-sysupgrade.bin
-	IMAGE/nand-factory.ubi := append-ubi
-	IMAGE/nand-sysupgrade.bin := sysupgrade-tar | append-metadata
+	IMAGES := factory.ubi sysupgrade.bin
+	IMAGE/factory.ubi := append-ubi
+	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 
-
 define Device/yuncore_ax840
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
 	DEVICE_VENDOR := YunCore
 	DEVICE_MODEL := AX840
 	DEVICE_TITLE := YunCore AX840
@@ -32,9 +33,13 @@ define Device/yuncore_ax840
   	DEVICE_DTS_CONFIG := config@cp03-c1
   	SUPPORTED_DEVICES := yuncore,ax840
 	SOC := ipq6018
-        KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-        #KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
-        KERNEL_INITRAMFS = kernel-bin | fit none $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	KERNEL = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	KERNEL_INITRAMFS = kernel-bin | gzip | fit gzip $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	#KERNEL_INITRAMFS = kernel-bin | fit none $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+	DEVICE_PACKAGES := ipq-wifi-yuncore_ax880
+	IMAGES += factory.bin
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+
 
   	DEVICE_PACKAGES := ath11k-wifi-yuncore-ax840 ipq-wifi-yuncore_ax840 uboot-env
 endef

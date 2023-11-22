@@ -6,6 +6,7 @@
 #include "ipq6018-upstreamable.dtsi"
 #include "ipq6018-regulator-mp5496.dtsi"
 #include "ipq6018-ess.dtsi"
+#include "ipq6018-memory.dtsi"
 
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/gpio/gpio.h>
@@ -18,10 +19,10 @@
 		ethernet0 = "/soc/dp2";
 		ethernet1 = "/soc/dp1";
 		serial0 = &blsp1_uart3;
-		led-boot = &led_sys_green;
-		led-failsafe = &led_sys_amber;
-		led-running = &led_sys_green;
-		led-upgrade = &led_sys_amber;
+		led-boot = &led_system;
+		led-failsafe = &led_system;
+		led-running = &led_system;
+		led-upgrade = &led_system;
 	};
 
 	chosen {
@@ -34,7 +35,7 @@
 
 		reset {
 			label = "reset";
-			gpios = <&tlmm 9 GPIO_ACTIVE_LOW>;
+			gpios = <&tlmm 19 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_RESTART>;
 		};
 	};
@@ -42,14 +43,22 @@
 	leds {
 		compatible = "gpio-leds";
 
-		led_sys_amber: led-0 {
-			label = "amber:system";
-			gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
+		led_system: led_system {
+			label = "system";
+			color = "red";
+			gpios = <&tlmm 32 GPIO_ACTIVE_HIGH>;
 		};
 
-		led_sys_green: led-1 {
-			label = "green:system";
+		led_wlan2g {
+			label = "wlan2g";
+			color = "green";
 			gpios = <&tlmm 37 GPIO_ACTIVE_HIGH>;
+		};
+
+		led_wlan5g {
+			label = "wlan5g";
+			color = "blue";
+			gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
 		};
 	};
 };
