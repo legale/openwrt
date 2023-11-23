@@ -1,0 +1,36 @@
+diff -aur qca-ssdk-a/src/sal/sd/linux/uk_interface/sw_api_ks_ioctl.c qca-ssdk-b/src/sal/sd/linux/uk_interface/sw_api_ks_ioctl.c
+--- qca-ssdk-a/src/sal/sd/linux/uk_interface/sw_api_ks_ioctl.c  2023-11-23 03:44:28.876369453 +0300
++++ qca-ssdk-b/src/sal/sd/linux/uk_interface/sw_api_ks_ioctl.c  2023-11-23 14:25:46.635680390 +0300
+@@ -53,12 +53,12 @@
+ switch_close(struct inode * inode, struct file * file);
+
+
+-#ifdef KVER32      //for linux3.2
++#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0))
+ static long
+-switch_ioctl(struct file * file, unsigned int cmd, unsigned long arg);
++switch_ioctl(struct inode *inode, struct file * file, unsigned int cmd, unsigned long arg);
+ #else
+ static long
+-switch_ioctl(struct inode *inode, struct file * file, unsigned int cmd, unsigned long arg);
++switch_ioctl(struct file * file, unsigned int cmd, unsigned long arg);
+ #endif
+
+ static unsigned long *cmd_buf = NULL;
+@@ -237,12 +237,13 @@
+     return SW_OK;
+ }
+
+-#ifdef KVER32
++
++#if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(6,1,0))
+ static long
+-switch_ioctl(struct file * file, unsigned int cmd, unsigned long arg)
++switch_ioctl(struct inode *inode, struct file * file, unsigned int cmd, unsigned long arg)
+ #else
+ static long
+-switch_ioctl(struct inode *inode, struct file * file, unsigned int cmd, unsigned long arg)
++switch_ioctl(struct file * file, unsigned int cmd, unsigned long arg)
+ #endif
+ {
+     unsigned long args[SW_MAX_API_PARAM], rtn;

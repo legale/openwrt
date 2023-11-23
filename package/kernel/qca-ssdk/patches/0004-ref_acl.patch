@@ -1,0 +1,11 @@
+diff -aur qca-ssdk-a/src/ref/ref_acl.c qca-ssdk-b/src/ref/ref_acl.c
+--- qca-ssdk-a/src/ref/ref_acl.c	2023-11-23 04:00:33.312352182 +0300
++++ qca-ssdk-b/src/ref/ref_acl.c	2023-11-23 04:02:26.928350147 +0300
+@@ -229,7 +229,6 @@
+ 		eth_dev = dev_get_by_name(&init_net, entry->ifname);
+ 		if (eth_dev)
+ 		{
+-			br_fdb_delete_by_netdev(eth_dev, entry->src_mac.uc, 0);
+ 			dev_put(eth_dev);
+ 		}
+ 	}

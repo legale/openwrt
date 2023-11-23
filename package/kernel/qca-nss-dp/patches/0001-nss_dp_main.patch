@@ -1,0 +1,97 @@
+diff -aur nss-dp-a/hal/dp_ops/edma_dp/edma_v1/edma_data_plane.c nss-dp-b/hal/dp_ops/edma_dp/edma_v1/edma_data_plane.c
+--- nss-dp-a/hal/dp_ops/edma_dp/edma_v1/edma_data_plane.c	2023-11-23 15:17:53.319624397 +0300
++++ nss-dp-b/hal/dp_ops/edma_dp/edma_v1/edma_data_plane.c	2023-11-23 15:52:06.447587629 +0300
+@@ -279,7 +279,7 @@
+ 	/*
+ 	 * Remap register resource
+ 	 */
+-	edma_hw.reg_base = ioremap_nocache((edma_hw.reg_resource)->start,
++	edma_hw.reg_base = ioremap((edma_hw.reg_resource)->start,
+ 				resource_size(edma_hw.reg_resource));
+ 	if (!edma_hw.reg_base) {
+ 		pr_warn("Unable to remap EDMA register memory.\n");
+diff -aur nss-dp-a/hal/gmac_ops/syn/gmac/syn_if.c nss-dp-b/hal/gmac_ops/syn/gmac/syn_if.c
+--- nss-dp-a/hal/gmac_ops/syn/gmac/syn_if.c	2023-11-23 15:17:53.327624397 +0300
++++ nss-dp-b/hal/gmac_ops/syn/gmac/syn_if.c	2023-11-23 15:53:38.651585978 +0300
+@@ -806,7 +806,7 @@
+ 	 * Populate the mac base addresses
+ 	 */
+ 	shd->nghd.mac_base =
+-		devm_ioremap_nocache(&dp_priv->pdev->dev, res->start,
++		devm_ioremap(&dp_priv->pdev->dev, res->start,
+ 							resource_size(res));
+ 	if (!shd->nghd.mac_base) {
+ 		netdev_dbg(ndev, "ioremap fail.\n");
+diff -aur nss-dp-a/hal/soc_ops/ipq50xx/nss_ipq50xx.c nss-dp-b/hal/soc_ops/ipq50xx/nss_ipq50xx.c
+--- nss-dp-a/hal/soc_ops/ipq50xx/nss_ipq50xx.c	2023-11-23 15:17:53.327624397 +0300
++++ nss-dp-b/hal/soc_ops/ipq50xx/nss_ipq50xx.c	2023-11-23 15:53:16.015586383 +0300
+@@ -89,7 +89,7 @@
+ 			pr_err("%s: SCM TCSR write error: %d\n", __func__, err);
+ 		}
+ 	} else {
+-		tcsr_addr = ioremap_nocache((tcsr_base + TCSR_GMAC_AXI_CACHE_OVERRIDE_OFFSET),
++		tcsr_addr = ioremap((tcsr_base + TCSR_GMAC_AXI_CACHE_OVERRIDE_OFFSET),
+ 						TCSR_GMAC_AXI_CACHE_OVERRIDE_REG_SIZE);
+ 		if (!tcsr_addr) {
+ 			pr_err("%s: ioremap failed\n", __func__);
+diff -aur nss-dp-a/nss_dp_main.c nss-dp-b/nss_dp_main.c
+--- nss-dp-a/nss_dp_main.c	2023-11-23 15:17:53.327624397 +0300
++++ nss-dp-b/nss_dp_main.c	2023-11-23 15:40:32.563600055 +0300
+@@ -904,9 +904,7 @@
+ 	uint8_t *maddr;
+ 	struct nss_dp_dev *dp_priv;
+ 	struct resource memres_devtree = {0};
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(6, 1, 0))
+ 	uint8_t mac_addr[ETH_ALEN];
+-#endif
+ 
+ 	dp_priv = netdev_priv(netdev);
+ 
+@@ -933,7 +931,7 @@
+ 	hal_pdata->netdev = netdev;
+ 	hal_pdata->macid = dp_priv->macid;
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+ 	dp_priv->phy_mii_type = of_get_phy_mode(np);
+ #else
+ 	if (of_get_phy_mode(np, &dp_priv->phy_mii_type))
+@@ -952,7 +950,7 @@
+ 	of_property_read_u32(np, "qcom,forced-duplex", &dp_priv->forced_duplex);
+ 
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+ 	maddr = (uint8_t *)of_get_mac_address(np);
+ #if (LINUX_VERSION_CODE > KERNEL_VERSION(5, 4, 0))
+ 	if (IS_ERR((void *)maddr)) {
+diff -aur nss-dp-a/nss_dp_switchdev.c nss-dp-b/nss_dp_switchdev.c
+--- nss-dp-a/nss_dp_switchdev.c	2023-11-23 15:17:53.327624397 +0300
++++ nss-dp-b/nss_dp_switchdev.c	2023-11-23 15:46:03.579594128 +0300
+@@ -288,7 +288,7 @@
+  * nss_dp_port_attr_set()
+  *	Sets attributes
+  */
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+ static int nss_dp_port_attr_set(struct net_device *dev,
+ 				const struct switchdev_attr *attr
+ 				,struct switchdev_trans *trans)
+@@ -299,7 +299,7 @@
+ {
+ 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+ 	if (switchdev_trans_ph_prepare(trans))
+ 		return 0;
+ #endif
+@@ -335,7 +335,7 @@
+ 		return NOTIFY_DONE;
+ 	}
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+ 	err = nss_dp_port_attr_set(netdev, port_attr_info->attr
+ 				   ,port_attr_info->trans);
+ #else
