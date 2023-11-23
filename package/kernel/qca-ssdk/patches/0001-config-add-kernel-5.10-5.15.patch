@@ -1,0 +1,87 @@
+diff -aur ssd-a/config ssd-b/config
+--- ssd-a/config	2023-10-04 11:32:01.000000000 +0300
++++ ssd-b/config	2023-11-23 18:28:03.415420064 +0300
+@@ -24,6 +24,14 @@
+ 	OS_VER=5_4
+ endif
+ 
++ifeq ($(KVER),$(filter 5.10%,$(KVER)))
++	OS_VER=5_10
++endif
++
++ifeq ($(KVER),$(filter 5.15%,$(KVER)))
++	OS_VER=5_15
++endif
++
+ ifeq ($(KVER),$(filter 6.1%,$(KVER)))
+ 	OS_VER=6_1
+ endif
+@@ -125,7 +133,7 @@
+ 		CPU_CFLAG= -DMODULE -nostdinc -D$(BOARD_NAME) -Wundef -Wstrict-prototypes -Wno-trigraphs -Werror -fno-strict-aliasing -fno-common -Wno-format-security -fno-delete-null-pointer-checks -O2 -fno-dwarf2-cfi-asm -mabi=aapcs-linux -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -D__LINUX_ARM_ARCH__=7 -march=armv7-a -msoft-float -Uarm -Wframe-larger-than=1024 -fno-stack-protector -Wno-unused-but-set-variable -fomit-frame-pointer -g -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -DCC_HAVE_ASM_GOTO    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(mem)"
+ 	endif
+ 	
+-	ifeq ($(KVER),$(filter 4.9% 4.4% 5.4%,$(KVER)))
++	ifeq ($(KVER),$(filter 4.9% 4.4% 5.4% 5.10% 5.15%,$(KVER)))
+ 		CPU_CFLAG= -DMODULE -nostdinc -D$(BOARD_NAME) -Wundef -Wstrict-prototypes -Wno-trigraphs -Werror -fno-strict-aliasing -fno-common -Wno-format-security -fno-delete-null-pointer-checks -Os -fno-dwarf2-cfi-asm -mabi=aapcs-linux -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -D__LINUX_ARM_ARCH__=7 -march=armv7-a -msoft-float -Uarm -Wframe-larger-than=2048 -fno-stack-protector -Wno-unused-but-set-variable -fomit-frame-pointer -g -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -DCC_HAVE_ASM_GOTO    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(mem)"
+ 	endif
+ 	
+@@ -135,7 +143,7 @@
+ endif
+ 
+ ifeq ($(ARCH), arm64)
+-	ifeq ($(KVER),$(filter 4.1% 4.4% 4.9% 5.4%,$(KVER)))
++	ifeq ($(KVER),$(filter 4.1% 4.4% 4.9% 5.4% 5.10% 5.15%,$(KVER)))
+ 		CPU_CFLAG=  -DMODULE -Os -pipe -march=armv8-a -mcpu=cortex-a53+crypto -fno-caller-saves -fno-strict-aliasing -Werror -fno-common -Wno-format-security -Wno-pointer-sign -Wno-unused-but-set-variable -Wno-error=unused-result -mcmodel=large
+ 	endif
+ endif
+diff -aur ssd-a/src/init/ssdk_clk.c ssd-b/src/init/ssdk_clk.c
+--- ssd-a/src/init/ssdk_clk.c	2023-10-04 11:32:01.000000000 +0300
++++ ssd-b/src/init/ssdk_clk.c	2023-11-23 18:34:55.311412688 +0300
+@@ -726,7 +726,7 @@
+ {
+ 	void __iomem *tcsr_base = NULL;
+ 
+-	tcsr_base = ioremap_nocache(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
++	tcsr_base = ioremap(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
+ 	if (!tcsr_base)
+ 	{
+ 		SSDK_ERROR("Failed to map tcsr eth address!\n");
+@@ -743,7 +743,7 @@
+ {
+ 	void __iomem *tcsr_base = NULL;
+ 
+-	tcsr_base = ioremap_nocache(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
++	tcsr_base = ioremap(TCSR_ETH_ADDR, TCSR_ETH_SIZE);
+ 	if (!tcsr_base)
+ 	{
+ 		SSDK_ERROR("Failed to map tcsr eth address!\n");
+@@ -791,7 +791,7 @@
+ 	a_uint32_t reg_val;
+ 	int i, loops = 20;
+ 
+-	pll_lock = ioremap_nocache(CMN_PLL_LOCKED_ADDR, CMN_PLL_LOCKED_SIZE);
++	pll_lock = ioremap(CMN_PLL_LOCKED_ADDR, CMN_PLL_LOCKED_SIZE);
+ 	if (!pll_lock) {
+ 		SSDK_ERROR("Failed to map CMN PLL LOCK register!\n");
+ 		return A_FALSE;
+@@ -848,7 +848,7 @@
+ 	void __iomem *cmn_pll_src_base = NULL;
+ 	a_uint32_t reg_val;
+ 
+-	cmn_pll_src_base = ioremap_nocache(CMN_BLK_PLL_SRC_ADDR, CMN_BLK_SIZE);
++	cmn_pll_src_base = ioremap(CMN_BLK_PLL_SRC_ADDR, CMN_BLK_SIZE);
+ 	if (!cmn_pll_src_base) {
+ 		SSDK_ERROR("Failed to map cmn pll source address!\n");
+ 		return;
+diff -aur ssd-a/src/init/ssdk_init.c ssd-b/src/init/ssdk_init.c
+--- ssd-a/src/init/ssdk_init.c	2023-10-04 11:32:01.000000000 +0300
++++ ssd-b/src/init/ssdk_init.c	2023-11-23 18:34:08.731413522 +0300
+@@ -2789,7 +2789,7 @@
+ 							(a_uint8_t *)&reg_value, 4);
+ 			mdelay(10);
+ 			/*softreset psgmii, fixme*/
+-			gcc_addr = ioremap_nocache(0x1812000, 0x200);
++			gcc_addr = ioremap(0x1812000, 0x200);
+ 			if (!gcc_addr) {
+ 				SSDK_ERROR("gcc map fail!\n");
+ 				return 0;
