@@ -1,6 +1,8 @@
 # ax840 dev
 ## external kernel tree
 `./kernel_tree` скрипт, чтобы включать/выключать дерево исходников ядра
+`./git-am` скрипт для применения патчей в том же порядке, в котором их применяет owrt.
+Эти патчи нужно применить к ветке ядра v6.1.63 
 
 # цель 
 получить рабочую версию прошивки для ax840. Сейчас не работает wifi по
@@ -17,7 +19,8 @@
 
 
 ## справочная информация
-### log.txt для `make target/compile V=s -j1 >log.txt 2>&1` 
+### log.txt для сборки ядра `make target/compile V=s -j1 >log.txt 2>&1` 
+
 ### порядок применения патчей:
 - `target/linux/generic/backport-6.1`
 - `target/linux/generic/pending-6.1`
