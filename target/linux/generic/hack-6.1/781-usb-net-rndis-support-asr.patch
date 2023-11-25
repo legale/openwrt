@@ -1,3 +1,9 @@
+From f81700b6bb2eda3756247bce472d8eaf6f466f61 Mon Sep 17 00:00:00 2001
+From: OpenWrt community <openwrt-devel@lists.openwrt.org>
+Date: Wed, 13 Jul 2022 13:49:26 +0200
+Subject: [PATCH] net/usb/rndis_host.c: add rndis info
+
+---
 --- a/drivers/net/usb/rndis_host.c
 +++ b/drivers/net/usb/rndis_host.c
 @@ -630,6 +630,16 @@ static const struct driver_info	zte_rndi
