@@ -6,7 +6,7 @@
 
 #include "ipq6018.dtsi"
 #include "ipq6018-memory.dtsi"
-#include "ipq6018-upstreamable.dtsi"
+#include "ipq6018-wifi.dtsi"
 #include "ipq6018-regulator-mp5496.dtsi"
 #include "ipq6018-ess.dtsi"
 
