@@ -9,7 +9,7 @@ fi
 P1=$1
 P2=$2
 S=$3
-PATCH_DIRS="$P1/backports-$S $P1/pending-$S $P1/hack-$S $P2/patches-$S"
+PATCH_DIRS="$P1/backport-$S $P1/pending-$S $P1/hack-$S $P2/patches-$S"
 
 for dir in $PATCH_DIRS; do
     echo $dir
