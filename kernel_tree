@@ -1,0 +1,80 @@
+#!/bin/sh
+#set -x
+
+config_file=".config"
+TREE="/tmpram/kernel"
+TREEQ="\"$TREE\""
+ACTION=2
+STATUS=""
+
+# Enable the parameter
+enable_kernel_tree() {
+    sed -i "s|^.*\(CONFIG_EXTERNAL_KERNEL_TREE\)=.*|\1=${TREEQ}|" "$config_file"
+}
+
+# Disable the parameter
+disable_kernel_tree() {
+    sed -i 's|\(CONFIG_EXTERNAL_KERNEL_TREE\)=.*|\1=""|' "$config_file"
+}
+
+# Check the current status of the parameter
+check_kernel_tree_status() {
+    grep -q "^CONFIG_EXTERNAL_KERNEL_TREE=${TREEQ}" "$config_file"
+    if [ $? -eq 0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Print script usage
+print_usage() {
+    echo "Usage: $0 [-h] [-s 0|1]"
+    echo "  -h               Display this help message."
+    echo "  -a <0|1>         action: 0 - to disable, 1 - to enable"
+    exit 1
+}
+
+# Process command line options
+while getopts ":ha:" opt; do
+    case $opt in
+        h)
+            print_usage
+            ;;
+        a)
+            ACTION=$OPTARG
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            print_usage
+            ;;
+    esac
+done
+
+# Example usage
+# First, check the status and then enable or disable accordingly, based on the -s option.
+
+echo "Kernel tree path: ${TREE}"
+echo "detection..."
+if check_kernel_tree_status; then
+	echo "status: enabled"
+	STATUS=1
+else
+	echo "status: disabled"
+	STATUS=0
+fi
+
+if [ "$ACTION" -eq "$STATUS" ]; then
+	exit 0
+fi
+
+
+echo "toggling..."
+if [ "$STATUS" -eq 0 ]; then
+    enable_kernel_tree
+    echo "status: enabled"
+else
+    disable_kernel_tree
+    echo "status: disabled"
+fi
+
