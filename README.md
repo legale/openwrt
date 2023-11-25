@@ -26,6 +26,12 @@
 - `target/linux/generic/pending-6.1`
 - `target/linux/generic/hack-6.1`
 - `target/linux/qualcommax/patches-6.1`
+
+
+### так можно склонировать базовое ядро, чтобы потом применить к нему все патчи из owrt
+`git clone --depth=1 --branch=v6.1.63 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git`
+
+
 ```
 WARNING: Makefile 'package/utils/busybox/Makefile' has a dependency on 'libpam', which does not exist
 WARNING: Makefile 'package/utils/busybox/Makefile' has a dependency on 'libpam', which does not exist
