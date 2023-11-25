@@ -1,3 +1,5 @@
+from: to@me.ok
+to: to@me.ok
 Author: Thomas Kupper <thomas.kupper@gmail.com>
 Date:   Wed May 24 21:14:17 2023 +0200
 
@@ -10,6 +12,8 @@ This is a 5GbE chip but it reports support for 10G. Implement config_init()
 to set max speed to 5G.
 
 Signed-off-by: Thomas Kupper <thomas.kupper@gmail.com>
+
+---
 --- a/drivers/net/phy/aquantia/aquantia_main.c
 +++ b/drivers/net/phy/aquantia/aquantia_main.c
 @@ -24,6 +24,8 @@
