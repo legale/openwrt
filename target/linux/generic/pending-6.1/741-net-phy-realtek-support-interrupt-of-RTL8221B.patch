@@ -1,3 +1,13 @@
+From: me@to.yo
+From: me@to.yo
+Date: Sun, 25 November 2023 22:24:56 +0300
+Subject: [patch]: net: realtek: add interrupt for rtl82221b
+
+Add support config interrupt for rtl8221b
+
+Signed-off-by: Isaev Ruslan <legale.legale@gmail.com>
+
+---
 --- a/drivers/net/phy/realtek.c
 +++ b/drivers/net/phy/realtek.c
 @@ -979,6 +979,51 @@ static int rtl8221b_config_init(struct p
