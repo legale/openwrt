@@ -16,6 +16,8 @@ for dir in $PATCH_DIRS; do
 	for patch in $(ls $dir/*.patch); do
         echo "Applying patch: $patch"
         git am "$patch"
-		[ "$?" -ne 0 ] && exit 1
+		[ "$?" -ne 0 ] && echo path: $path failed! && exit 1
     done
 done
+echo All patches apllied successfully!
+exit 0
