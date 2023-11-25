@@ -1,0 +1,20 @@
+#!/bin/sh
+
+if [ $# -ne 3 ]; then
+	echo "usage syntax:\n $0 <generic target path> <your target path> <kernel version>"
+	echo "usage example:\n $0 target/linux/generic target/linux/qualcommax 6.1"
+	exit 1
+fi
+
+P1=$1
+P2=$2
+S=$3
+PATCH_DIRS="$P1/backports-$S $P1/pending-$S $P1/hack-$S $P2/patches-$S"
+
+for dir in $PATCH_DIRS; do
+    echo $dir
+	for patch in $(ls $dir/*.patch); do
+        echo "Applying patch: $patch"
+        git am "$patch"
+    done
+done
