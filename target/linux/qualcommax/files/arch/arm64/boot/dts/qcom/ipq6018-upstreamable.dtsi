@@ -1,41 +1,4 @@
-/ {
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
-		nss@40000000 {
-			reg = <0x00 0x40000000 0x00 0x1000000>;
-			no-map;
-		};
-
-		uboot@4a100000 {
-			reg = <0x00 0x4a100000 0x00 0x400000>;
-			no-map;
-		};
-
-		sbl@4a500000 {
-			reg = <0x00 0x4a500000 0x00 0x100000>;
-			no-map;
-		};
-	};
-};
-
 &soc {
-	blsp1_i2c6: i2c@78ba000 {
-		compatible = "qcom,i2c-qup-v2.2.1";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		reg = <0x0 0x078ba000 0x0 0x600>;
-		interrupts = <GIC_SPI 300 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&gcc GCC_BLSP1_QUP6_I2C_APPS_CLK>,
-			 <&gcc GCC_BLSP1_AHB_CLK>;
-		clock-names = "core", "iface";
-		clock-frequency = <400000>;
-		dmas = <&blsp_dma 22>, <&blsp_dma 23>;
-		dma-names = "tx", "rx";
-	};
-
 	wifi: wifi@c000000 {
 		compatible = "qcom,ipq6018-wifi";
 		reg = <0x0 0xc000000 0x0 0x1000000>;
