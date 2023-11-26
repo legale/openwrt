@@ -7,7 +7,6 @@
 #include "ipq6018.dtsi"
 #include "ipq6018-memory.dtsi"
 #include "ipq6018-wifi.dtsi"
-//#include "ipq6018-regulator-mp5496.dtsi"
 #include "ipq6018-ess.dtsi"
 
 #include <dt-bindings/input/input.h>
@@ -18,8 +17,8 @@
 	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018";
 	
 	aliases {
-		ethernet0 = "/soc/dp2";
-		ethernet1 = "/soc/dp1";
+		ethernet0 = &dp5;
+		ethernet1 = &dp4;
 		serial0 = &blsp1_uart3;
 		led-boot = &led_system;
 		led-failsafe = &led_system;
@@ -96,34 +95,6 @@
 	};
 };
 
-&soc {
-	dp1 {
-		device_type = "network";
-		compatible = "qcom,nss-dp";
-		reg = <0x0 0x3a001600 0x0 0x200>;
-		qcom,mactype = <0>;
-		qcom,id = <4>;
-		qcom,phy-mdio-addr = <0x03>;
-		phy-handle = <&rtl8211f_3>;
-		phy-mode = "sgmii";
-	};
-
-	dp2 {
-		device_type = "network";
-		compatible = "qcom,nss-dp";
-		reg = <0x0 0x3a001800 0x0 0x200>;
-		qcom,mactype = <0>;
-		qcom,id = <5>;
-		qcom,phy-mdio-addr = <0x04>;
-		phy-handle = <&rtl8211f_4>;
-		phy-mode = "sgmii";
-	};
-};
-
-&edma {
-	status = "okay";
-};
-
 &mdio {
 	status = "okay";
 	pinctrl-0 = <&mdio_pins>;
@@ -132,24 +103,24 @@
 	reset-delay-us = <10000>;
 	reset-post-delay-us = <50000>;
 
-	rtl8211f_3: ethernet-phy@0 {
+	qca8075_3: ethernet-phy@3 {
 		reg = <3>;
 	};
 
-	rtl8211f_4: ethernet-phy@1 {
+	qca8075_4: ethernet-phy@4 {
 		reg = <4>;
 	};
 };
 
 &switch {
 	status = "okay";
-	switch_cpu_bmp =   <0x01>; /* cpu port bitmap */
-	switch_lan_bmp =   <0x10>; /* lan port bitmap */
-	switch_wan_bmp =   <0x20>; /* wan port bitmap */
-	switch_inner_bmp = <0x80>; /*inner port bitmap*/
-	switch_mac_mode =  <0x00>; /* mac mode for uniphy instance0*/
-	switch_mac_mode1 = <0xff>; /* mac mode for uniphy instance1*/
-	switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
+	switch_cpu_bmp =   <ESS_PORT0>; /* cpu port bitmap */
+	switch_lan_bmp =   <ESS_PORT4>; /* lan port bitmap */
+	switch_wan_bmp =   <ESS_PORT5>; /* wan port bitmap */
+	switch_inner_bmp = <ESS_PORT6 | ESS_PORT7>; /*inner port bitmap*/
+	switch_mac_mode =  <MAC_MODE_PSGMII>; /* mac mode for uniphy instance0*/
+	switch_mac_mode1 = <MAC_MODE_DISABLED>; /* mac mode for uniphy instance1*/
+	switch_mac_mode2 = <MAC_MODE_DISABLED>; /* mac mode for uniphy instance2*/
 
 	qcom,port_phyinfo {
 		port@3 {
@@ -162,6 +133,22 @@
 			phy_address = <0x04>;
 		};
 	};
+};
+
+&edma {
+	status = "okay";
+};
+
+&dp4 {
+	status = "okay";
+	phy-handle = <&qca8075_3>;
+	label = "lan";
+};
+
+&dp5 {
+	status = "okay";
+	phy-handle = <&qca8075_4>;
+	label = "wan";
 };
 
 &qpic_bam {
@@ -181,5 +168,6 @@
 };
 
 &wifi {
+  qcom,ath11k-calibration-variant = "Yuncore-AX840";
 	status = "okay";
 };
