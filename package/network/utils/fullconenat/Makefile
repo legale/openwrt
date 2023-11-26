@@ -47,6 +47,7 @@ define KernelPackage/ipt-fullconenat
 	CONFIG_NF_CONNTRACK_EVENTS=y \
 	CONFIG_NF_CONNTRACK_CHAIN_EVENTS=n
   FILES:=$(PKG_BUILD_DIR)/xt_FULLCONENAT.ko
+  AUTOLOAD:=$(call AutoLoad,50,xt_FULLCONENAT)
 endef
 
 include $(INCLUDE_DIR)/kernel-defaults.mk
