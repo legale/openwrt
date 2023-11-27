@@ -47,6 +47,7 @@ ALLWIFIBOARDS:= \
 	xiaomi_ax9000 \
 	xiaomi_ax1800 \
 	yyets_le1 \
+	yuncore_ax840 \
 	yuncore_ax880 \
 	zte_mf289f \
 	zte_mf287 \
@@ -54,6 +55,11 @@ ALLWIFIBOARDS:= \
 	zyxel_nbg7815
 
 ALLWIFIPACKAGES:=$(foreach BOARD,$(ALLWIFIBOARDS),ipq-wifi-$(BOARD))
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	cp board/* $(PKG_BUILD_DIR)
+endef
 
 define Package/ipq-wifi-default
   SUBMENU:=ath10k Board-Specific Overrides
@@ -160,6 +166,7 @@ $(eval $(call generate-ipq-wifi-package,xiaomi_ax3600,Xiaomi AX3600))
 $(eval $(call generate-ipq-wifi-package,xiaomi_ax9000,Xiaomi AX9000))
 $(eval $(call generate-ipq-wifi-package,xiaomi_ax1800,Xiaomi AX1800))
 $(eval $(call generate-ipq-wifi-package,yyets_le1,YYeTs LE1))
+$(eval $(call generate-ipq-wifi-package,yuncore_ax840,Yuncore AX840))
 $(eval $(call generate-ipq-wifi-package,yuncore_ax880,Yuncore AX880))
 $(eval $(call generate-ipq-wifi-package,zte_mf289f,ZTE MF289F))
 $(eval $(call generate-ipq-wifi-package,zte_mf287,ZTE MF287))
