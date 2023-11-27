@@ -12,7 +12,7 @@
 		status = "disabled";
 
 		switch_cpu_bmp = <ESS_PORT0>;
-		switch_inner_bmp = <ESS_PORT6 | ESS_PORT7>;
+		switch_inner_bmp = <0xc0>; /* ESS_PORT6 | ESS_PORT7 */
 		bm_tick_mode = <0>;
 		tm_tick_mode = <0>;
 

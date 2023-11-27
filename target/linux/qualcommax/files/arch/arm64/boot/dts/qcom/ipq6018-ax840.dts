@@ -118,7 +118,7 @@
 	switch_cpu_bmp =   <ESS_PORT0>; /* cpu port bitmap */
 	switch_lan_bmp =   <ESS_PORT4>; /* lan port bitmap */
 	switch_wan_bmp =   <ESS_PORT5>; /* wan port bitmap */
-	switch_inner_bmp = <ESS_PORT6 | ESS_PORT7>; /*inner port bitmap*/
+	switch_inner_bmp = <0xc0>; /*inner port bitmap - ESS_PORT6 | ESS_PORT7 */
 	switch_mac_mode =  <MAC_MODE_PSGMII>; /* mac mode for uniphy instance0*/
 	switch_mac_mode1 = <MAC_MODE_DISABLED>; /* mac mode for uniphy instance1*/
 	switch_mac_mode2 = <MAC_MODE_DISABLED>; /* mac mode for uniphy instance2*/
