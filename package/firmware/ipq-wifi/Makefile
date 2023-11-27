@@ -55,6 +55,11 @@ ALLWIFIBOARDS:= \
 
 ALLWIFIPACKAGES:=$(foreach BOARD,$(ALLWIFIBOARDS),ipq-wifi-$(BOARD))
 
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	cp board/* $(PKG_BUILD_DIR)
+endef
+
 define Package/ipq-wifi-default
   SUBMENU:=ath10k Board-Specific Overrides
   SECTION:=firmware
