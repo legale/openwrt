@@ -113,6 +113,7 @@ platform_do_upgrade() {
 		CI_ROOT_UBIPART="rootfs"
 		nand_do_upgrade "$1"
 		;;
+	yuncore,ax840|\
 	yuncore,ax880)
 		active="$(fw_printenv -n active)"
 		if [ "$active" -eq "1" ]; then
