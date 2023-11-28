@@ -77,64 +77,58 @@
 		#size-cells = <2>;
 		ranges;
 
-		memory@40000000 {
+		nss@40000000 {
 			no-map;
 			reg = <0x0 0x40000000 0x0 0x00800000>;
 		};
 
-		tzapp: memory@49B00000 {  /* TZAPPS */
+		tzapp: tzapp@49B00000 {  /* TZAPPS */
 			no-map;
 		};
 
-		memory@4A100000 {
+		uboot@4A100000 {
 			no-map;
 			reg = <0x0 0x4A100000 0x0 0x00400000>;
 		};
 
-		memory@4A500000 {
+		sbl@4A500000 {
 			no-map;
 			reg = <0x0 0x4A500000 0x0 0x00100000>;
 		};
 
-		memory@4A600000 {
+		tz@4A600000 {
 			no-map;
 			reg = <0x0 0x4A600000 0x0 0x00400000>;
 		};
 
-		smem_region: memory@4AA00000 {
+		smem_region:smem@4AA00000 {
 			no-map;
 			reg = <0x0 0x4AA00000 0x0 0x00100000>;
 		};
 
-		q6_region: memory@4ab00000 {
+		q6_region: wcnss@4ab00000 {
 			no-map;
 			reg = <0x0 0x4ab00000 0x0 0x02800000>;
 		};
 
-		q6_etr_region: memory@4d3000000 {
+		q6_etr_region: q6_etr_dump@1 {
 			no-map;
 			reg = <0x0 0x4D300000 0x0 0x100000>;
 		};
 
-		memory@4d400000 {
+		m3_dump@4d400000 {
 			no-map;
 			reg = <0x0 0x4d400000 0x0 0x100000>;
 		};
 
-		memory@4d500000 {
-			compatible = "ramoops";
-			reg = <0x0 0x4d500000 0x0 0x100000>;
-			record-size = <0x1000>;
-		};
-
-		rpm_msg_ram: memory@60000 {
+		rpm_msg_ram: rpm_msg_ram@0x60000 {
 			no-map;
 			reg = <0x0 0x60000 0x0 0x6000>;
 		};
 	};
 
-#elif defined(__IPQ_MEM_PROFILE_512_MB__)
 
+#elif defined(__IPQ_MEM_PROFILE_512_MB__)
 	/*		    512 MB Profile
 	 * +=========+==============+========================+
 	 * |        |              |                         |
@@ -207,64 +201,58 @@
 		#size-cells = <2>;
 		ranges;
 
-		memory@40000000 {
+		nss@40000000 {
 			no-map;
 			reg = <0x0 0x40000000 0x0 0x01000000>;
 		};
 
-		tzapp: memory@49B00000 {  /* TZAPPS */
+		tzapp: tzapp@49B00000 {  /* TZAPPS */
 			no-map;
 		};
 
-		memory@4A100000 {
+		uboot@4A100000 {
 			no-map;
 			reg = <0x0 0x4A100000 0x0 0x00400000>;
 		};
 
-		memory@4A500000 {
+		sbl@4A500000 {
 			no-map;
 			reg = <0x0 0x4A500000 0x0 0x00100000>;
 		};
 
-		memory@4A600000 {
+		tz@4A600000 {
 			no-map;
 			reg = <0x0 0x4A600000 0x0 0x00400000>;
 		};
 
-		smem_region: memory@4AA00000 {
+		smem_region:smem@4AA00000 {
 			no-map;
 			reg = <0x0 0x4AA00000 0x0 0x00100000>;
 		};
 
-		q6_region: memory@4ab00000 {
+		q6_region: wcnss@4ab00000 {
 			no-map;
 			reg = <0x0 0x4ab00000 0x0 0x03700000>;
 		};
 
-		q6_etr_region: memory@4e200000 {
+		q6_etr_region: q6_etr_dump@1 {
 			no-map;
 			reg = <0x0 0x4E200000 0x0 0x100000>;
 		};
 
-		memory@4e300000 {
+		m3_dump@4e300000 {
 			no-map;
 			reg = <0x0 0x4e300000 0x0 0x100000>;
 		};
 
-		memory@4e400000 {
-			compatible = "ramoops";
-			reg = <0x0 0x4e400000 0x0 0x100000>;
-			record-size = <0x1000>;
-		};
-
-		rpm_msg_ram: memory@60000 {
+		rpm_msg_ram: rpm_msg_ram@0x60000 {
 			no-map;
 			reg = <0x0 0x60000 0x0 0x6000>;
 		};
 	};
 
-#else
 
+#else
 	/*		  Default Profile
 	 * +=========+==============+========================+
 	 * |        |              |                         |
@@ -339,58 +327,52 @@
 		#size-cells = <2>;
 		ranges;
 
-		memory@40000000 {
+		nss@40000000 {
 			no-map;
 			reg = <0x0 0x40000000 0x0 0x01000000>;
 		};
 
-		tzapp: memory@49B00000 {  /* TZAPPS */
+		tzapp:tzapp@49B00000 {  /* TZAPPS */
 			no-map;
 			reg = <0x0 0x49B00000 0x0 0x00600000>;
 		};
 
-		memory@4A100000 {
+		uboot@4A100000 {
 			no-map;
 			reg = <0x0 0x4A100000 0x0 0x00400000>;
 		};
 
-		memory@4A500000 {
+		sbl@4A500000 {
 			no-map;
 			reg = <0x0 0x4A500000 0x0 0x00100000>;
 		};
 
-		memory@4A600000 {
+		tz@4A600000 {
 			no-map;
 			reg = <0x0 0x4A600000 0x0 0x00400000>;
 		};
 
-		smem_region: memory@4AA00000 {
+		smem_region: smem@4AA00000 {
 			no-map;
 			reg = <0x0 0x4AA00000 0x0 0x00100000>;
 		};
 
-		q6_region: memory@4ab00000 {
+		q6_region: wcnss@4ab00000 {
 			no-map;
 			reg = <0x0 0x4ab00000 0x0 0x05500000>;
 		};
 
-		q6_etr_region: memory@50000000 {
+		q6_etr_region: q6_etr_dump@1 {
 			no-map;
 			reg = <0x0 0x50000000 0x0 0x100000>;
 		};
 
-		memory@50100000 {
+		m3_dump@50100000 {
 			no-map;
 			reg = <0x0 0x50100000 0x0 0x100000>;
 		};
 
-		memory@50200000 {
-			compatible = "ramoops";
-			reg = <0x0 0x50200000 0x0 0x100000>;
-			record-size = <0x1000>;
-		};
-
-		rpm_msg_ram: memory@60000 {
+		rpm_msg_ram: rpm_msg_ram@0x60000 {
 			no-map;
 			reg = <0x0 0x60000 0x0 0x6000>;
 		};

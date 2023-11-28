@@ -65,6 +65,15 @@
 	};
 };
 
+&soc {
+	q6v5_m3: q6v5_m3 {
+		compatible = "qca,q6v5-m3-rproc";
+		firmware = "IPQ6018/m3_fw.mdt";
+		qca,auto-restart;
+		qcom,restart-group = <&q6v5_m3 &q6v5_wcss>;
+	};
+};
+
 &blsp1_uart3 {
 	pinctrl-0 = <&serial_3_pins>;
 	pinctrl-names = "default";
