@@ -1,8 +1,8 @@
-From 1a82d7080001d395563ad8266d120d4cf63ad0a5 Mon Sep 17 00:00:00 2001
+From 4ef751128de689e12e3eccb5d4e2562ef8b42758 Mon Sep 17 00:00:00 2001
 From: Shawn Guo <shawn.guo@linaro.org>
 Date: Wed, 29 Sep 2021 11:42:46 +0800
-Subject: [PATCH] arm64: dts: qcom: msm8996: Move '#clock-cells' to QMP PHY
- child node
+Subject: [PATCH 04/44] arm64: dts: qcom: msm8996: Move '#clock-cells' to QMP
+ PHY child node
 
 '#clock-cells' is a required property of QMP PHY child node, not itself.
 Move it to fix the dtbs_check warnings.

@@ -1,7 +1,8 @@
-From 94343612f165fc8b4f95fcbe6fd044d6f63d4a28 Mon Sep 17 00:00:00 2001
+From e5698ba1e94af28e5f54943bcd6de278efc84500 Mon Sep 17 00:00:00 2001
 From: Shawn Guo <shawn.guo@linaro.org>
 Date: Tue, 31 Aug 2021 13:23:25 +0800
-Subject: [PATCH] arm64: dts: qcom: Update BAM DMA node name per DT schema
+Subject: [PATCH 02/44] arm64: dts: qcom: Update BAM DMA node name per DT
+ schema
 
 Follow dma-controller.yaml schema to use `dma-controller` as node name
 of BAM DMA devices.
