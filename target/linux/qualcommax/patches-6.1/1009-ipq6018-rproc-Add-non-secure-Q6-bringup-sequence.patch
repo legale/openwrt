@@ -8,12 +8,42 @@ This patch adds Q6 bring up sequence support.
 Change-Id: I28eee991168034cc240d863e736ed9c766ec4f33
 Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
 ---
+ arch/arm64/boot/dts/qcom/ipq6018.dtsi |  20 ++-
  drivers/remoteproc/qcom_q6v5_wcss.c   | 223 ++++++++++++++++++++++++--
  2 files changed, 227 insertions(+), 16 deletions(-)
 
+--- a/arch/arm64/boot/dts/qcom/ipq6018.dtsi
++++ b/arch/arm64/boot/dts/qcom/ipq6018.dtsi
+@@ -618,8 +618,24 @@
+ 				      "wcss_reset",
+ 				      "wcss_q6_reset";
+ 
+-			clocks = <&gcc GCC_PRNG_AHB_CLK>;
+-			clock-names = "prng";
++			clocks = <&gcc GCC_PRNG_AHB_CLK>,
++					<&gcc GCC_SYS_NOC_WCSS_AHB_CLK>,
++					<&gcc GCC_Q6SS_ATBM_CLK>,
++					<&gcc GCC_Q6SS_PCLKDBG_CLK>,
++					<&gcc GCC_Q6_TSCTR_1TO2_CLK>;
++			clock-names = "prng",
++					"gcc_sys_noc_wcss_ahb_clk",
++					"gcc_q6ss_atbm_clk",
++					"gcc_q6ss_pclkdbg_clk",
++					"gcc_q6_tsctr_1to2_clk";
++			assigned-clocks = <&gcc GCC_SYS_NOC_WCSS_AHB_CLK>,
++					  <&gcc GCC_Q6SS_PCLKDBG_CLK>,
++					<&gcc GCC_Q6_TSCTR_1TO2_CLK>,
++					<&gcc GCC_Q6SS_ATBM_CLK>;
++			assigned-clock-rates = <133333333>,
++						<600000000>,
++						<600000000>,
++						<240000000>;
+ 
+ 			qcom,halt-regs = <&tcsr 0x18000 0x1b000 0xe000>;
+ 
 --- a/drivers/remoteproc/qcom_q6v5_wcss.c
 +++ b/drivers/remoteproc/qcom_q6v5_wcss.c
-@@ -26,6 +26,7 @@
+@@ -27,6 +27,7 @@
  
  /* Q6SS Register Offsets */
  #define Q6SS_RESET_REG		0x014
@@ -21,7 +51,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  #define Q6SS_GFMUX_CTL_REG		0x020
  #define Q6SS_PWR_CTL_REG		0x030
  #define Q6SS_MEM_PWR_CTL		0x0B0
-@@ -67,6 +68,7 @@
+@@ -68,6 +69,7 @@
  #define HALT_CHECK_MAX_LOOPS		200
  #define Q6SS_XO_CBCR		GENMASK(5, 3)
  #define Q6SS_SLEEP_CBCR		GENMASK(5, 2)
@@ -29,7 +59,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  
  /* Q6SS config/status registers */
  #define TCSR_GLOBAL_CFG0	0x0
-@@ -77,6 +79,7 @@
+@@ -78,6 +80,7 @@
  #define Q6SS_RST_EVB		0x10
  
  #define BHS_EN_REST_ACK		BIT(0)
@@ -37,7 +67,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  #define SSCAON_ENABLE		BIT(13)
  #define SSCAON_BUS_EN		BIT(15)
  #define SSCAON_BUS_MUX_MASK	GENMASK(18, 16)
-@@ -116,6 +119,11 @@ struct q6v5_wcss {
+@@ -120,6 +123,11 @@ struct q6v5_wcss {
  	struct clk *qdsp6ss_core_gfmux;
  	struct clk *lcc_bcr_sleep;
  	struct clk *prng_clk;
@@ -49,8 +79,8 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	struct regulator *cx_supply;
  	struct qcom_sysmon *sysmon;
  
-@@ -154,12 +162,77 @@ struct wcss_data {
- 	bool requires_force_stop;
+@@ -164,12 +172,77 @@ struct wcss_data {
+ 	bool need_auto_boot;
  };
  
 +static const struct wcss_data wcss_ipq6018_res_init;
@@ -127,7 +157,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	/* Assert resets, stop core */
  	val = readl(wcss->reg_base + Q6SS_RESET_REG);
  	val |= Q6SS_CORE_ARES | Q6SS_BUS_ARES_ENABLE | Q6SS_STOP_CORE;
-@@ -185,7 +258,19 @@ static int q6v5_wcss_reset(struct q6v5_w
+@@ -195,7 +268,19 @@ static int q6v5_wcss_reset(struct q6v5_w
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  	udelay(1);
  
@@ -147,7 +177,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	val |= Q6SS_LDO_BYP;
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
-@@ -195,6 +280,7 @@ static int q6v5_wcss_reset(struct q6v5_w
+@@ -205,6 +290,7 @@ static int q6v5_wcss_reset(struct q6v5_w
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
  	/* Deassert memory peripheral sleep and L2 memory standby */
@@ -155,7 +185,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	val |= Q6SS_L2DATA_STBY_N | Q6SS_SLP_RET_N;
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
-@@ -209,7 +295,10 @@ static int q6v5_wcss_reset(struct q6v5_w
+@@ -219,7 +305,10 @@ static int q6v5_wcss_reset(struct q6v5_w
  		 * array to turn on.
  		 */
  		val |= readl(wcss->reg_base + Q6SS_MEM_PWR_CTL);
@@ -167,7 +197,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	}
  	/* Remove word line clamp */
  	val = readl(wcss->reg_base + Q6SS_PWR_CTL_REG);
-@@ -217,6 +306,7 @@ static int q6v5_wcss_reset(struct q6v5_w
+@@ -227,6 +316,7 @@ static int q6v5_wcss_reset(struct q6v5_w
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
  	/* Remove IO clamp */
@@ -175,7 +205,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	val &= ~Q6SS_CLAMP_IO;
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
-@@ -235,6 +325,16 @@ static int q6v5_wcss_reset(struct q6v5_w
+@@ -245,6 +335,16 @@ static int q6v5_wcss_reset(struct q6v5_w
  	val &= ~Q6SS_STOP_CORE;
  	writel(val, wcss->reg_base + Q6SS_RESET_REG);
  
@@ -192,7 +222,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	return 0;
  }
  
-@@ -356,7 +456,7 @@ static int q6v5_wcss_qcs404_power_on(str
+@@ -376,7 +476,7 @@ static int q6v5_wcss_qcs404_power_on(str
  	/* Read CLKOFF bit to go low indicating CLK is enabled */
  	ret = readl_poll_timeout(wcss->reg_base + Q6SS_XO_CBCR,
  				 val, !(val & BIT(31)), 1,
@@ -201,7 +231,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	if (ret) {
  		dev_err(wcss->dev,
  			"xo cbcr enabling timed out (rc:%d)\n", ret);
-@@ -509,13 +609,18 @@ static void q6v5_wcss_halt_axi_port(stru
+@@ -529,13 +629,18 @@ static void q6v5_wcss_halt_axi_port(stru
  	unsigned long timeout;
  	unsigned int val;
  	int ret;
@@ -224,7 +254,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	regmap_write(halt_map, offset + AXI_HALTREQ_REG, 1);
  
  	/* Wait for halt */
-@@ -528,12 +633,14 @@ static void q6v5_wcss_halt_axi_port(stru
+@@ -548,12 +653,14 @@ static void q6v5_wcss_halt_axi_port(stru
  		msleep(1);
  	}
  
@@ -244,7 +274,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  }
  
  static int q6v5_qcs404_wcss_shutdown(struct q6v5_wcss *wcss)
-@@ -602,6 +709,7 @@ static int q6v5_qcs404_wcss_shutdown(str
+@@ -622,6 +729,7 @@ static int q6v5_qcs404_wcss_shutdown(str
  
  static int q6v5_wcss_powerdown(struct q6v5_wcss *wcss)
  {
@@ -252,7 +282,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	int ret;
  	u32 val;
  
-@@ -619,21 +727,26 @@ static int q6v5_wcss_powerdown(struct q6
+@@ -639,21 +747,26 @@ static int q6v5_wcss_powerdown(struct q6
  	writel(val, wcss->rmb_base + SSCAON_CONFIG);
  
  	/* 4 - SSCAON_CONFIG 1 */
@@ -280,7 +310,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  
  	/* 7 - Disable WCSSAON_CONFIG 13 */
  	val = readl(wcss->rmb_base + SSCAON_CONFIG);
-@@ -643,6 +756,13 @@ static int q6v5_wcss_powerdown(struct q6
+@@ -663,6 +776,13 @@ static int q6v5_wcss_powerdown(struct q6
  	/* 8 - De-assert WCSS/Q6 HALTREQ */
  	reset_control_assert(wcss->wcss_reset);
  
@@ -294,7 +324,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	return 0;
  }
  
-@@ -651,6 +771,12 @@ static int q6v5_q6_powerdown(struct q6v5
+@@ -671,6 +791,12 @@ static int q6v5_q6_powerdown(struct q6v5
  	int ret;
  	u32 val;
  	int i;
@@ -307,7 +337,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  
  	/* 1 - Halt Q6 bus interface */
  	q6v5_wcss_halt_axi_port(wcss, wcss->halt_map, wcss->halt_q6);
-@@ -666,14 +792,17 @@ static int q6v5_q6_powerdown(struct q6v5
+@@ -686,14 +812,17 @@ static int q6v5_q6_powerdown(struct q6v5
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
  	/* 4 - Clamp WL */
@@ -325,7 +355,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	val &= ~Q6SS_SLP_RET_N;
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
-@@ -691,6 +820,7 @@ static int q6v5_q6_powerdown(struct q6v5
+@@ -711,6 +840,7 @@ static int q6v5_q6_powerdown(struct q6v5
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  
  	/* 9 - Turn off BHS */
@@ -333,7 +363,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	val &= ~Q6SS_BHS_ON;
  	writel(val, wcss->reg_base + Q6SS_PWR_CTL_REG);
  	udelay(1);
-@@ -698,7 +828,7 @@ static int q6v5_q6_powerdown(struct q6v5
+@@ -718,7 +848,7 @@ static int q6v5_q6_powerdown(struct q6v5
  	/* 10 - Wait till BHS Reset is done */
  	ret = readl_poll_timeout(wcss->reg_base + Q6SS_BHS_STATUS,
  				 val, !(val & BHS_EN_REST_ACK), 1000,
@@ -342,7 +372,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  	if (ret) {
  		dev_err(wcss->dev, "BHS_STATUS not OFF (rc:%d)\n", ret);
  		return ret;
-@@ -706,9 +836,23 @@ static int q6v5_q6_powerdown(struct q6v5
+@@ -726,9 +856,23 @@ static int q6v5_q6_powerdown(struct q6v5
  
  	/* 11 -  Assert WCSS reset */
  	reset_control_assert(wcss->wcss_reset);
@@ -366,7 +396,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  
  	return 0;
  }
-@@ -910,6 +1054,57 @@ static int q6v5_alloc_memory_region(stru
+@@ -970,6 +1114,57 @@ static int q6v5_alloc_memory_region(stru
  	return 0;
  }
  
@@ -424,7 +454,7 @@ Signed-off-by: Manikanta Mylavarapu <quic_mmanikan@quicinc.com>
  static int ipq8074_init_clock(struct q6v5_wcss *wcss)
  {
  	int ret;
-@@ -1113,7 +1308,7 @@ static int q6v5_wcss_remove(struct platf
+@@ -1179,7 +1374,7 @@ static int q6v5_wcss_remove(struct platf
  }
  
  static const struct wcss_data wcss_ipq6018_res_init = {
