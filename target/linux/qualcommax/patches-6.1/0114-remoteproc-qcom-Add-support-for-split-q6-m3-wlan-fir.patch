@@ -1,8 +1,7 @@
-From bcb2c37f265924ac43642f1f97c964dd546b3cb5 Mon Sep 17 00:00:00 2001
+From b422c9d4f048b086ce83f44a7cfcddcce162897f Mon Sep 17 00:00:00 2001
 From: Gokul Sriram Palanisamy <gokulsri@codeaurora.org>
 Date: Sat, 30 Jan 2021 10:50:07 +0530
-Subject: [PATCH 115/137] remoteproc: qcom: Add support for split q6 + m3 wlan
- firmware
+Subject: [PATCH] remoteproc: qcom: Add support for split q6 + m3 wlan firmware
 
 IPQ8074 supports split firmware for q6 and m3 as well.
 So add support for loading the m3 firmware before q6.
@@ -83,7 +82,7 @@ Signed-off-by: Nikhil Prakash V <nprakash@codeaurora.org>
  
  	ret = q6v5_wcss_init_mmio(wcss, pdev);
  	if (ret)
-@@ -1149,7 +1173,8 @@ static int q6v5_wcss_remove(struct platf
+@@ -1150,7 +1174,8 @@ static int q6v5_wcss_remove(struct platf
  
  static const struct wcss_data wcss_ipq8074_res_init = {
  	.init_clock = ipq8074_init_clock,
@@ -93,7 +92,7 @@ Signed-off-by: Nikhil Prakash V <nprakash@codeaurora.org>
  	.crash_reason_smem = WCSS_CRASH_REASON,
  	.aon_reset_required = true,
  	.wcss_q6_reset_required = true,
-@@ -1162,7 +1187,7 @@ static const struct wcss_data wcss_qcs40
+@@ -1163,7 +1188,7 @@ static const struct wcss_data wcss_qcs40
  	.init_clock = qcs404_init_clock,
  	.init_regulator = qcs404_init_regulator,
  	.crash_reason_smem = WCSS_CRASH_REASON,
