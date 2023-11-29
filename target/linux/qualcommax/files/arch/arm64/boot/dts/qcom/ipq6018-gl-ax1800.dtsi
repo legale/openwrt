@@ -283,38 +283,6 @@
 };
 
 &soc {
-    dp1: dp@1 {
-		device_type = "network";
-		compatible = "qcom,nss-dp";
-		reg = <0x0 0x3a001000 0x0 0x200>;
-		qcom,mactype = <0>;
-		local-mac-address = [000000000000];
-		qcom,id = <1>;
-		phy-handle = <&qca8075_0>;
-		phy-mode = "sgmii";
-	};
-
-    dp2: dp@2 {
-		device_type = "network";
-		compatible = "qcom,nss-dp";
-		reg = <0x0 0x3a001200 0x0 0x200>;
-		qcom,mactype = <0>;
-		local-mac-address = [000000000000];
-		qcom,id = <2>;
-		phy-handle = <&qca8075_1>;
-		phy-mode = "sgmii";
-	};
-
-    dp3: dp@3 {
-		device_type = "network";
-		compatible = "qcom,nss-dp";
-		reg = <0x0 0x3a001400 0x0 0x200>;
-		qcom,mactype = <0>;
-		local-mac-address = [000000000000];
-		qcom,id = <3>;
-		phy-handle = <&qca8075_2>;
-		phy-mode = "sgmii";
-	};
 
 	gpio_keys {
 		compatible = "gpio-keys";

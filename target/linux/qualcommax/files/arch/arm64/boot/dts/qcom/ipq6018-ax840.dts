@@ -18,6 +18,8 @@
 	model = "Yuncore AX840";
 	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018";
 	
+	/delete-node/ rpm-glink;
+
 	aliases {
 		ethernet0 = &dp5;
 		ethernet1 = &dp4;
