@@ -5,6 +5,8 @@
 
 #define __IPQ_MEM_PROFILE_512_MB__
 
+#include <dt-bindings/net/qcom-ipq-ess.h>
+
 #include "ipq6018.dtsi"
 #include "ipq6018-memory.dtsi"
 //#include "ipq6018-wifi.dtsi"
