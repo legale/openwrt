@@ -178,6 +178,7 @@
 };
 
 &wifi {
-  qcom,ath11k-calibration-variant = "Yuncore-AX840";
+ 	qcom,ath11k-calibration-variant = "Yuncore-AX840";
+	qcom,ath11k-fw-memory-mode = <0x01>;
 	status = "okay";
 };
