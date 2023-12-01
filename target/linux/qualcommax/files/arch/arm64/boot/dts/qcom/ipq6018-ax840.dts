@@ -63,6 +63,7 @@
 		qcom,id = <4>;
 		phy-handle = <&qca8075_3>;
 		phy-mode = "sgmii";
+		label = "lan";
 	};
 
     dp5: dp@5 {
@@ -74,6 +75,7 @@
 		qcom,id = <5>;
 		phy-handle = <&qca8075_4>;
 		phy-mode = "sgmii";
+		label = "wan";
 	};
 
 };
