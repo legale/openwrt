@@ -6,9 +6,10 @@ endef
 
 define Device/UbiFit
 	KERNEL_IN_UBI := 1
-	IMAGES := nand-factory.ubi nand-sysupgrade.bin
-	IMAGE/nand-factory.ubi := append-ubi
-	IMAGE/nand-sysupgrade.bin := sysupgrade-tar | append-metadata
+	IMAGES := factory.ubi factory.bin sysupgrade.bin
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+	IMAGE/factory.ubi := append-ubi
+	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 
 define Device/EmmcImage
