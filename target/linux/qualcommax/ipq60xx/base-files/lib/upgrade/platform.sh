@@ -10,16 +10,7 @@ platform_check_image() {
 }
 
 platform_pre_upgrade() {
-	case "$(board_name)" in
-	esac
-	local magic_long="$(get_magic_long "$1")"
-	board=$(board_name)
-	case $board in
-	yuncore,ax840)
-			[ "$magic_long" = "73797375" ] && return 0
-			;;
-	esac
-	return 1
+	return 0
 }
 
 platform_do_upgrade() {
