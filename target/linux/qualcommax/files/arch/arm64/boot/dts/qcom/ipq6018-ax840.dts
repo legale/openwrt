@@ -22,24 +22,100 @@
 	compatible = "yuncore,ax840", "qcom,ipq6018", "qcom,ipq6018-cp03";
 
 	aliases {
-		ethernet3 = &dp4;
-		ethernet4 = &dp5;
+		ethernet0 = &dp5;
+		ethernet1 = &dp4;
+		led-boot = &led_system;
+		led-failsafe = &led_system;
+		led-running = &led_system;
+		led-upgrade = &led_system;
 	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs-append = " ubi.block=0,rootfs root=/dev/ubiblock0_1 earlycon debug";
+	};
+
+    keys {
+        compatible = "gpio-keys";
+
+        reset {
+            label = "reset";
+            gpios = <&tlmm 19 GPIO_ACTIVE_LOW>;
+            linux,code = <KEY_RESTART>;
+        };
+    };
+
+    leds {
+        compatible = "gpio-leds";
+
+        led_system: led_system {
+            label = "system";
+            gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
+            color = "red";
+        };
+
+        led_wlan2g: led_wlan2g {
+            label = "wlan2g";
+            gpios = <&tlmm 37 GPIO_ACTIVE_HIGH>;
+            color = "green";
+        };
+
+        led_wlan5g: led_wlan25 {
+            label = "wlan5g";
+            gpios = <&tlmm 32 GPIO_ACTIVE_HIGH>;
+            color = "blue";
+        };
+    };
 };
 
 &mdio {
-	qca8075_3: ethernet-phy@3 {
-        compatible = "ethernet-phy-ieee802.3-c22";
+	status = "okay";
+	pinctrl-0 = <&mdio_pins>;
+ 	pinctrl-names = "default";
+ 	phy-reset-gpio = <&tlmm 75 0>;
+	
+	qca8075_3: ethernet-phy@0 {
+		compatible = "ethernet-phy-ieee802.3-c22";
 		reg = <3>;
 	};
-	qca8075_4: ethernet-phy@4 {
-        compatible = "ethernet-phy-ieee802.3-c22";
+
+	qca8075_4: ethernet-phy@1 {
+		compatible = "ethernet-phy-ieee802.3-c22";
 		reg = <4>;
 	};
 };
 
+&tlmm {
+
+	mdio_pins: mdio_pinmux {
+		mux_0 {
+			pins = "gpio64";
+			function = "mdc";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+		mux_1 {
+			pins = "gpio65";
+			function = "mdio";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+		mux_2 {
+			pins = "gpio75";
+			function = "gpio";
+			bias-pull-up;
+		};
+	};
+};
+
 &switch {
-	switch_lan_bmp = <0x3c>; /* lan port bitmap */
+	switch_cpu_bmp = <0x01>; /* cpu port bitmap */
+	switch_lan_bmp = <0x10>; /* lan port bitmap */
+	switch_wan_bmp = <0x20>; /* wan port bitmap */
+	switch_inner_bmp = <0x80>; /* wan port bitmap */
+	switch_mac_mode = <0x00>; 
+	switch_mac_mode1 = <0xff>;
+	switch_mac_mode1 = <0xff>;
 
 	qcom,port_phyinfo {
 		port@3 {
