@@ -50,7 +50,7 @@
 
         led_system: led_system {
             label = "system";
-            gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
+            gpios = <&tlmm 32 GPIO_ACTIVE_HIGH>;
             color = "red";
         };
 
@@ -62,7 +62,7 @@
 
         led_wlan5g: led_wlan25 {
             label = "wlan5g";
-            gpios = <&tlmm 32 GPIO_ACTIVE_HIGH>;
+            gpios = <&tlmm 35 GPIO_ACTIVE_HIGH>;
             color = "blue";
         };
     };
