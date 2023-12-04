@@ -16,6 +16,10 @@ platform_pre_upgrade() {
 
 platform_do_upgrade() {
 	case "$(board_name)" in
+	yuncore,ax840)
+		CI_UBIPART="rootfs"
+		nand_do_upgrade "$1"
+		;;
 	glinet,gl-axt1800|\
 	glinet,gl-ax1800|\
 	xiaomi,ax1800)

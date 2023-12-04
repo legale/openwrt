@@ -51,3 +51,25 @@ define Device/xiaomi_ax1800
 	DEVICE_PACKAGES := ipq-wifi-xiaomi_ax1800
 endef
 TARGET_DEVICES += xiaomi_ax1800
+
+define Device/yuncore_ax840
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	
+	KERNEL_SUFFIX := .bin
+	IMAGES := factory.ubi factory.bin sysupgrade.bin
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+	IMAGE/factory.ubi := append-ubi
+	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+	
+	DEVICE_VENDOR := Yuncore
+	DEVICE_MODEL := AX840
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	SOC := ipq6018
+	DEVICE_DTS_CONFIG := config@cp03-c1
+	DEVICE_PACKAGES := ath11k-firmware-ipq6018 ipq-wifi-yuncore_ax840 uboot-env
+endef
+TARGET_DEVICES += yuncore_ax840
+	
+
