@@ -100,3 +100,19 @@ define Device/yuncore_fap650
 	IMAGE/factory.ubin := append-ubi | qsdk-ipq-factory-nand
 endef
 TARGET_DEVICES += yuncore_fap650
+
+define Device/yuncore_ax840
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Yuncore
+	DEVICE_MODEL := AX840
+	SUPPORTED_DEVICES := yuncore,ax840-p2
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	DEVICE_DTS_CONFIG := config@cp03-c1
+	SOC := ipq6018
+	DEVICE_PACKAGES := ipq-wifi-yuncore_ax840
+    IMAGES := factory.ubi factory.ubin sysupgrade.bin
+    IMAGE/factory.ubin := append-ubi | qsdk-ipq-factory-nand
+endef
+TARGET_DEVICES += yuncore_ax840

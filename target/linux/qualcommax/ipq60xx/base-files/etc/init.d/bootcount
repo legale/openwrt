@@ -7,6 +7,7 @@ boot() {
 	linksys,mr7350)
 		mtd resetbc s_env || true
 	;;
+	yuncore,ax840|\
 	yuncore,fap650)
 		fw_setenv owrt_bootcount 0
 	;;
