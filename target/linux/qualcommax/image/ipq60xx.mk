@@ -338,3 +338,4 @@ define Device/yuncore_ax840
     IMAGE/factory.ubin := append-ubi | qsdk-ipq-factory-nand
 endef
 TARGET_DEVICES += yuncore_ax840
+
