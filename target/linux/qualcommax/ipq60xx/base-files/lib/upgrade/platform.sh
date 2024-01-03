@@ -43,6 +43,7 @@ platform_do_upgrade() {
 	glinet,gl-ax1800)
 		nand_do_upgrade "$1"
 		;;
+	yuncore,fap650|\
 	yuncore,ax840)
 		[ "$(fw_printenv -n owrt_env_ver 2>/dev/null)" != "7" ] && ax840_env_setup
 		active="$(fw_printenv -n owrt_slotactive 2>/dev/null)"

@@ -10,6 +10,7 @@ board=$(board_name)
 case "$board" in
     glinet,gl-ax1800|\
     glinet,gl-axt1800|\
+	yuncore,fap650|\
 	yuncore,ax840)
         idx="$(find_mtd_index 0:appsblenv)"
         [ -n "$idx" ] && \
