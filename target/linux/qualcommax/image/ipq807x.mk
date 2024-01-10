@@ -409,6 +409,7 @@ define Device/yuncore_ax880
 	$(call Device/UbiFit)
 	DEVICE_VENDOR := Yuncore
 	DEVICE_MODEL := AX880
+	SUPPORTED_DEVICES += fplus_wf-ap-624h-iic
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
 	DEVICE_DTS_CONFIG := config@hk09
@@ -425,6 +426,7 @@ define Device/fplus_wf-ap-624h-iic
 	$(call Device/UbiFit)
 	DEVICE_VENDOR := Fplus
 	DEVICE_MODEL := WF-AP-624H-IIC
+	SUPPORTED_DEVICES += yuncore,ax880
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
 	DEVICE_DTS_CONFIG := config@hk09
@@ -443,7 +445,6 @@ define Device/zbtlink_zbt-z800ax
 	DEVICE_MODEL := ZBT-Z800AX
 	DEVICE_PACKAGES := ipq-wifi-fplus_wf-ap-624h-iic
 	IMAGES += factory.bin
-	IMAGE/factory.ubi := append-ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 endef
 
