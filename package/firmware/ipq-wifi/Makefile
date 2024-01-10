@@ -39,6 +39,7 @@ ALLWIFIBOARDS:= \
 	linksys_mx5300 \
 	linksys_mx8500 \
 	netgear_lbr20 \
+	fplus_wf-ap-624h-iic \
 	netgear_rax120v2 \
 	netgear_sxk80 \
 	netgear_wax214 \
@@ -156,6 +157,7 @@ $(eval $(call generate-ipq-wifi-package,cmcc_rm2-6,CMCC RM2-6))
 $(eval $(call generate-ipq-wifi-package,compex_wpq873,Compex WPQ-873))
 $(eval $(call generate-ipq-wifi-package,dynalink_dl-wrx36,Dynalink DL-WRX36))
 $(eval $(call generate-ipq-wifi-package,edgecore_eap102,Edgecore EAP102))
+$(eval $(call generate-ipq-wifi-package,fplus_wf-ap-624h-iic,Fplus WF-AP-624H-IIC))
 $(eval $(call generate-ipq-wifi-package,edimax_cax1800,Edimax CAX1800))
 $(eval $(call generate-ipq-wifi-package,linksys_mx4200,Linksys MX4200))
 $(eval $(call generate-ipq-wifi-package,linksys_mx5300,Linksys MX5300))
