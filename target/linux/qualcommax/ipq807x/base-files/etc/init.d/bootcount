@@ -4,7 +4,12 @@ START=99
 
 boot() {
 	case $(board_name) in
-	edgecore,eap102|\
+	edgecore,eap102)
+		fw_setenv upgrade_available 0
+		# Unset changed flag after sysupgrade complete
+		fw_setenv changed
+	;;
+	fplus,wf-ap-624h-iic|\
 	yuncore,ax880)
 		fw_setenv upgrade_available 0
 		# Unset changed flag after sysupgrade complete
@@ -20,6 +25,6 @@ boot() {
 		echo resetting owrt_bootcount in 5 min...
 		sleep 300 && fw_setenv owrt_bootcount 0
 		) &
-		;;
+	;;
 	esac
 }
