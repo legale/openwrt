@@ -319,7 +319,6 @@ define Device/fplus_wf-ap-624h-iic
 	SOC := ipq8072
 	DEVICE_PACKAGES := ipq-wifi-fplus_wf-ap-624h-iic
 	IMAGES += factory.bin
-	IMAGE/factory.ubi := append-ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 endef
 TARGET_DEVICES += fplus_wf-ap-624h-iic
