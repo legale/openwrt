@@ -17,6 +17,7 @@ case "$FIRMWARE" in
 	edimax,cax1800|\
 	linksys,mx4200v1|\
 	linksys,mx4200v2|\
+	fplus,wf-ap-624h-iic|\
 	netgear,rax120v2|\
 	netgear,wax218|\
 	netgear,wax620|\
