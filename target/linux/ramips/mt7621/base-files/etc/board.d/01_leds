@@ -264,6 +264,7 @@ youhua,wr1200js)
 yuncore,fap690)
 	ucidef_set_led_netdev "eth_link" "LAN link" "blue:status" "lan" "link"
 	;;
+fplus,wf-ap-622l-iic|\
 yuncore,ax820)
 	ucidef_set_led_netdev "lan" "LAN" "green:lan" "lan"
 	ucidef_set_led_netdev "wan" "WAN" "green:wan" "wan"
