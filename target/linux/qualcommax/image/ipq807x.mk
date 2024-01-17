@@ -1,3 +1,28 @@
+define Device/FitImage
+	KERNEL_SUFFIX := -uImage.itb
+	KERNEL = kernel-bin | libdeflate-gzip | fit gzip $$(KDIR)/image-$$(DEVICE_DTS).dtb
+	KERNEL_NAME := Image
+endef
+
+define Device/FitImageLzma
+	KERNEL_SUFFIX := -uImage.itb
+	KERNEL = kernel-bin | lzma | fit lzma $$(KDIR)/image-$$(DEVICE_DTS).dtb
+	KERNEL_NAME := Image
+endef
+
+define Device/EmmcImage
+	IMAGES += factory.bin sysupgrade.bin
+	IMAGE/factory.bin := append-rootfs | pad-rootfs | pad-to 64k
+	IMAGE/sysupgrade.bin/squashfs := append-rootfs | pad-to 64k | sysupgrade-tar rootfs=$$$$@ | append-metadata
+endef
+
+define Device/UbiFit
+	KERNEL_IN_UBI := 1
+	IMAGES := factory.ubi sysupgrade.bin
+	IMAGE/factory.ubi := append-ubi | pad-to $$(BLOCKSIZE)
+	IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+endef
+
 define Build/wax6xx-netgear-tar
 	mkdir $@.tmp
 	mv $@ $@.tmp/nand-ipq807x-apps.img
@@ -278,9 +303,26 @@ define Device/yuncore_ax880
 	SOC := ipq8072
 	DEVICE_PACKAGES := ipq-wifi-yuncore_ax880
 	IMAGES += factory.bin
+	IMAGE/factory.ubi := append-ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 endef
 TARGET_DEVICES += yuncore_ax880
+
+define Device/fplus_wf-ap-624h-iic
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Fplus
+	DEVICE_MODEL := WF-AP-624H-IIC
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	DEVICE_DTS_CONFIG := config@hk09
+	SOC := ipq8072
+	DEVICE_PACKAGES := ipq-wifi-fplus_wf-ap-624h-iic
+	IMAGES += factory.bin
+	IMAGE/factory.ubi := append-ubi
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+endef
+TARGET_DEVICES += fplus_wf-ap-624h-iic
 
 define Device/zte_mf269
 	$(call Device/FitImage)
