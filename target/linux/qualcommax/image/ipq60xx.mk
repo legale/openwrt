@@ -85,6 +85,8 @@ define Device/yuncore_fap650
 	DEVICE_DTS_CONFIG := config@cp03-c1
 	SOC := ipq6018
 	DEVICE_PACKAGES := ipq-wifi-yuncore_fap650
+	IMAGES += factory.ubin
+	IMAGE/factory.ubin := append-ubi | qsdk-ipq-factory-nand 
 endef
 TARGET_DEVICES += yuncore_fap650
 
