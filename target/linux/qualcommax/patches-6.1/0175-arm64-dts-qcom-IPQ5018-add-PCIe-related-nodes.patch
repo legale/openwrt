@@ -1,5 +1,5 @@
 --- a/arch/arm64/boot/dts/qcom/ipq5018.dtsi
-++ b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
++++ b/arch/arm64/boot/dts/qcom/ipq5018.dtsi
 @@ -9,6 +9,7 @@
  #include <dt-bindings/interrupt-controller/arm-gic.h>
  #include <dt-bindings/clock/qcom,gcc-ipq5018.h>
@@ -43,9 +43,9 @@
 +			reset-names = "phy", "phy_phy";
 +			status = "disabled";
 +		};
-
++
  		mdio0: mdio@88000 {
- 			compatible = "qcom,ipq5018-mdio", "qcom,qca-mdio";
+ 			compatible = "qcom,ipq5018-mdio", "qcom,ipq40xx-mdio";
  			reg = <0x00088000 0x64>, <0x19475C4 0x4>;
 @@ -362,8 +395,8 @@
  				 <&sleep_clk>,
@@ -58,11 +58,12 @@
  				 <0>,
  				 <0>,
  				 <0>;
-@@ -739,6 +772,154 @@
+@@ -739,8 +772,156 @@
  				};
  			};
  		};
-
+-	};
+ 
 +		pcie_x1: pci@80000000 {
 +			compatible = "qcom,pcie-ipq5018";
 +			reg =  <0x80000000 0xf1d
@@ -95,7 +96,7 @@
 +					 IRQ_TYPE_LEVEL_HIGH>, /* int_b */
 +					<0 0 0 3 &intc 0 144
 +					 IRQ_TYPE_LEVEL_HIGH>, /* int_c */
-+					<0 0 0 4 &intc 0 145
++				<0 0 0 4 &intc 0 145
 +					 IRQ_TYPE_LEVEL_HIGH>; /* int_d */
 +
 +			interrupts = <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>;
@@ -210,6 +211,8 @@
 +			msi-map = <0x0 &v2m0 0x0 0xff8>;
 +			status = "disabled";
 +		};
- 	};
- 
++ 	};
++ 
  	thermal-zones {
+ 		ubi32-thermal {
+ 			polling-delay-passive = <0>;
