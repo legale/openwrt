@@ -1,6 +1,8 @@
---- a/config
-+++ b/config
-@@ -363,6 +363,8 @@ ifneq (, $(filter MPPE APPE HPPE CPPE AL
+Index: qca-ssdk-2023-10-04-23a5aa4a/config
+===================================================================
+--- qca-ssdk-2023-10-04-23a5aa4a.orig/config
++++ qca-ssdk-2023-10-04-23a5aa4a/config
+@@ -369,6 +369,8 @@ ifneq (, $(filter MPPE APPE HPPE CPPE AL
  endif
  
  ifneq (, $(filter MP, $(CHIP_TYPE)))
@@ -9,12 +11,3 @@
  	IN_UNIPHY=TRUE
  endif
  
-@@ -444,7 +446,7 @@ ifeq (MP, $(CHIP_TYPE))
- 		IN_QM=FALSE
- 		IN_PPPOE=FALSE
- 		IN_VSI=FALSE
--		IN_CTRLPKT=FALSE
-+#		IN_CTRLPKT=FALSE
- 		IN_SERVCODE=FALSE
- 		IN_BM=FALSE
- 		IN_SHAPER=FALSE
