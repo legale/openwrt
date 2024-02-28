@@ -1,0 +1,14 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+board=$(board_name)
+
+case "$board" in
+yuncore,fap650)
+	uci set network.wan_dev=device
+	uci set network.wan_dev.name='wan'
+	uci set network.wan_dev.promisc='1'
+	uci commit
+	reload_config
+esac
