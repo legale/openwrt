@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qca-ssdk
-PKG_RELEASE:=5
+PKG_RELEASE:=4
 
 PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/qca-ssdk.git
 PKG_SOURCE_PROTO:=git
@@ -10,6 +10,7 @@ PKG_SOURCE_VERSION:=23a5aa4a4d5834da7a07efb58baebfbee91786b0
 PKG_MIRROR_HASH:=9d169ce924a46a4e530031061d3183b92f23c7f46b3106f0b9ba3587846a73ee
 
 PKG_FLAGS:=nonshared
+PKG_BUILD_PARALLEL:=1
 PKG_BUILD_FLAGS:=no-lto
 
 include $(INCLUDE_DIR)/kernel.mk
@@ -42,18 +43,15 @@ MAKE_FLAGS+= \
 	ARCH=$(LINUX_KARCH) \
 	TARGET_SUFFIX=$(CONFIG_TARGET_SUFFIX) \
 	GCC_VERSION=$(GCC_VERSION) \
-	EXTRA_CFLAGS=-fno-stack-protector -I$(STAGING_DIR)/usr/include \
+	EXTRA_CFLAGS='-fno-PIC -fno-stack-protector -I$(STAGING_DIR)/usr/include' \
 	SoC=$(CONFIG_TARGET_SUBTARGET) \
 	PTP_FEATURE=disable SWCONFIG_FEATURE=disable \
 	ISISC_ENABLE=disable IN_QCA803X_PHY=FALSE \
-	IN_QCA808X_PHY=FALSE IN_MALIBU_PHY=FALSE \
 	$(LNX_CONFIG_OPTS)
 
 ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq807x")
     MAKE_FLAGS+= CHIP_TYPE=HPPE
-endif
-
-ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
+else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
     MAKE_FLAGS+= CHIP_TYPE=CPPE
 endif
 
