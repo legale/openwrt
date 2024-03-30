@@ -12,7 +12,6 @@ netgear,wax206)
 	ucidef_set_led_netdev "wan" "WAN" "inet:blue" "wan"
 	;;
 xiaomi,redmi-router-ax6s)
-	ucidef_set_led_netdev "wan" "WAN" "blue:net" "wan"
 	;;
 esac
 

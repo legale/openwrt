@@ -13,10 +13,10 @@
 
 	aliases {
 		serial0 = &uart0;
-		led-boot = &led_power_amber;
-		led-failsafe = &led_power_amber;
-		led-running = &led_power_blue;
-		led-upgrade = &led_power_blue;
+		led-boot = &led_system;
+		led-failsafe = &led_system;
+		led-running = &led_system;
+		led-upgrade = &led_system;
 	};
 
 	chosen {
@@ -31,22 +31,22 @@
 	leds {
 		compatible = "gpio-leds";
 
-		led_power_blue: power_blue {
-			label = "blue:power";
+		led_system: power_blue {
+			label = "system";
 			gpios = <&pio 18 GPIO_ACTIVE_LOW>;
 		};
 
-		led_power_amber: power_amber {
-			label = "amber:power";
+		power_amber {
+			label = "wlan5g";
 			gpios = <&pio 17 GPIO_ACTIVE_LOW>;
 		};
 
-		led_net_blue: net_blue {
-			label = "blue:net";
+		net_blue {
+			label = "wlan2g";
 			gpios = <&pio 01 GPIO_ACTIVE_LOW>;
 		};
 
-		led_net_amber: net_amber {
+		net_amber {
 			label = "amber:net";
 			gpios = <&pio 16 GPIO_ACTIVE_LOW>;
 		};
