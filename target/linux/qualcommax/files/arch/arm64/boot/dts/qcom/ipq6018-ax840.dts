@@ -4,9 +4,9 @@
 /dts-v1/;
 
 
-#include "ipq6018.dtsi"
-#include "ipq6018-ess.dtsi"
 #include "ipq6018-512m.dtsi"
+#include "ipq6018-cp-cpu.dtsi"
+#include "ipq6018-ess.dtsi"
 #include "ipq6018-nss.dtsi"
 
 #include <dt-bindings/input/input.h>
@@ -15,8 +15,6 @@
 / {
 	model = "Yuncore AX840";
 	compatible = "yuncore,ax840", "qcom,ipq6018-cp03", "qcom,ipq6018";
-	
-	/delete-node/ rpm-glink;
 	
 	aliases {
 		ethernet0 = &dp5;
@@ -305,20 +303,3 @@
 	qcom,ath11k-fw-memory-mode = <1>;
 	status = "okay";
 };
-
-&CPU0 {
-	/delete-property/ cpu-supply;
-};
-
-&CPU1 {
-	/delete-property/ cpu-supply;
-};
-
-&CPU2 {
-	/delete-property/ cpu-supply;
-};
-
-&CPU3 {
-	/delete-property/ cpu-supply;
-};
-
