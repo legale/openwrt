@@ -1,4 +1,9 @@
 # wpa_supplicant config
+config WPA_DEBUG_FILE_SUPPORT
+	bool "Add support for writing debug log to a file. CONFIG_DEBUG_FILE=yi -f /tmp/hostapd.log"
+	depends on PACKAGE_hostapd-common
+	default y
+
 config WPA_RFKILL_SUPPORT
 	bool "Add rfkill support"
 	depends on PACKAGE_hostapd-common
