@@ -1,0 +1,18 @@
+From: Victor J. Orlikowski <vjorlikowski@gmail.com>
+Subject: Disable DMA in Qualcomm SPI
+--- a/drivers/spi/spi-qup.c
++++ a/drivers/spi/spi-qup.c
+@@ -1064,11 +1064,8 @@ static int spi_qup_probe(struct platform
+ 	controller->cclk = cclk;
+ 	controller->irq = irq;
+ 
+-	ret = spi_qup_init_dma(master, res->start);
+-	if (ret == -EPROBE_DEFER)
+-		goto error;
+-	else if (!ret)
+-		master->can_dma = spi_qup_can_dma;
++	/* Intentionally disable DMA */
++	master->can_dma = 0;
+ 
+ 	controller->qup_v1 = (uintptr_t)of_device_get_match_data(dev);
+ 
