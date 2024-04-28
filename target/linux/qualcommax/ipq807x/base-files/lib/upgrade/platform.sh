@@ -144,7 +144,9 @@ platform_do_upgrade() {
 	fplus,wf-ap-624h-iic|\
 	yuncore,ax880)
 		#create env vars if needed
-		[ "$(fw_printenv -n owrt_env_ver 2>/dev/null)" < 9 ] && ax880_env_setup
+		ver=$(fw_printenv -n owrt_env_ver 2>/dev/null)
+		[ -z "$ver" ] && ver=0
+		[ "$ver" -lt 9 ] && ax880_env_setup
 		active="$(fw_printenv -n owrt_slotactive 2>/dev/null)"
 		if [ "$active" = "1" ]; then
 			CI_UBIPART="rootfs"
