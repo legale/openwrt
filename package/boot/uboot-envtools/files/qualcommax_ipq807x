@@ -19,8 +19,6 @@ netgear,wax630)
 	;;
 compex,wpq873|\
 edgecore,eap102|\
-fplus,wf-ap-624h-iic|\
-yuncore,ax880|\
 zyxel,nbg7815)
 	idx="$(find_mtd_index 0:appsblenv)"
 	[ -n "$idx" ] && \
