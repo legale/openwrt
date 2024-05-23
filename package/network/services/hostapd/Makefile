@@ -148,6 +148,10 @@ ifneq ($(LOCAL_TYPE),hostapd)
   ifdef CONFIG_WPA_RFKILL_SUPPORT
     DRIVER_MAKEOPTS += NEED_RFKILL=y
   endif
+
+  ifdef CONFIG_WPA_DEBUG_FILE_SUPPORT
+    DRIVER_MAKEOPTS += CONFIG_DEBUG_FILE=y
+  endif
 endif
 
 DRV_DEPENDS:=+libnl-tiny
