@@ -380,22 +380,26 @@ define Device/fplus_wf-ap-624h-iic
 	PAGESIZE := 2048
 	DEVICE_DTS_CONFIG := config@hk09
 	SOC := ipq8072
-	DEVICE_PACKAGES := ipq-wifi-zbtlink_zbt-z800ax
+	DEVICE_PACKAGES := ipq-wifi-fplus_wf-ap-624h-iic
 	IMAGES += factory.bin
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 endef
 TARGET_DEVICES += fplus_wf-ap-624h-iic
 
-TARGET_DEVICES += zbtlink_zbt-z800ax
 define Device/zbtlink_zbt-z800ax
 	$(call Device/FitImage)
 	$(call Device/UbiFit)
 	DEVICE_VENDOR := Zbtlink
 	DEVICE_MODEL := ZBT-Z800AX
-	DEVICE_PACKAGES := ipq-wifi-fplus_wf-ap-624h-iic
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	DEVICE_DTS_CONFIG := config@hk09
+	SOC := ipq8072
+	DEVICE_PACKAGES := ipq-wifi-zbtlink_zbt-z800ax
 	IMAGES += factory.bin
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 endef
+TARGET_DEVICES += zbtlink_zbt-z800ax
 
 define Device/zte_mf269
 	$(call Device/FitImage)
