@@ -197,7 +197,6 @@
 			partition@610000 {
 				label = "0:art";
 				reg = <0x5d0000 0x40000>;
-				read-only;
 			};
 
 			partition@650000 {
