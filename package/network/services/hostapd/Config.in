@@ -1,4 +1,30 @@
 # wpa_supplicant config
+config WPA_DEBUG_FILE_SUPPORT
+	bool "Add support for writing debug log to a file: -f /tmp/hostapd.log"
+	depends on PACKAGE_wpa-supplicant || \
+		   PACKAGE_wpa-supplicant-openssl || \
+		   PACKAGE_wpa-supplicant-wolfssl || \
+		   PACKAGE_wpa-supplicant-mbedtls || \
+		   PACKAGE_wpa-supplicant-mesh-openssl || \
+		   PACKAGE_wpa-supplicant-mesh-wolfssl || \
+		   PACKAGE_wpa-supplicant-mesh-mbedtls || \
+		   PACKAGE_wpa-supplicant-basic || \
+		   PACKAGE_wpa-supplicant-mini || \
+		   PACKAGE_wpa-supplicant-p2p || \
+		   PACKAGE_wpad || \
+		   PACKAGE_wpad-openssl || \
+		   PACKAGE_wpad-wolfssl || \
+		   PACKAGE_wpad-mbedtls || \
+		   PACKAGE_wpad-basic || \
+		   PACKAGE_wpad-basic-openssl || \
+		   PACKAGE_wpad-basic-wolfssl || \
+		   PACKAGE_wpad-basic-mbedtls || \
+		   PACKAGE_wpad-mini || \
+		   PACKAGE_wpad-mesh-openssl || \
+		   PACKAGE_wpad-mesh-wolfssl || \
+		   PACKAGE_wpad-mesh-mbedtls
+	default y
+
 config WPA_RFKILL_SUPPORT
 	bool "Add rfkill support"
 	depends on PACKAGE_hostapd-common
