@@ -5,7 +5,8 @@
 
 
 #include "ipq6018-512m.dtsi"
-#include "ipq6018-cp-cpu.dtsi"
+// #include "ipq6018-cp-cpu.dtsi"
+#include "ipq6018-fixed-smps.dtsi"
 #include "ipq6018-ess.dtsi"
 
 #include <dt-bindings/input/input.h>
@@ -298,7 +299,6 @@
 
 &wifi {
  	qcom,ath11k-calibration-variant = "Yuncore-AX840";
-	qcom,tgt-mem-mode = <1>;
 	qcom,ath11k-fw-memory-mode = <1>;
 	status = "okay";
 };

@@ -58,6 +58,7 @@ define Device/yuncore_ax840
 	DEVICE_VENDOR := Yuncore
 	DEVICE_MODEL := AX840
 	SUPPORTED_DEVICES := yuncore,ax840-p2
+	SUPPORTED_DEVICES += yuncore,ax840
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
 	DEVICE_DTS_CONFIG := config@cp03-c1
