@@ -6,7 +6,7 @@
 
 #include "ipq6018-512m.dtsi"
 // #include "ipq6018-cp-cpu.dtsi"
-#include "ipq6018-fixed-smps.dtsi"
+// #include "ipq6018-fixed-smps.dtsi"
 #include "ipq6018-ess.dtsi"
 
 #include <dt-bindings/input/input.h>
@@ -24,6 +24,22 @@
 		led-failsafe = &led_system;
 		led-running = &led_system;
 		led-upgrade = &led_system;
+	};
+
+	V30:V30 {
+		compatible = "regulator-fixed";
+		regulator-name = "vmmc-supply";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+		regulator-always-on;
+	};
+
+	V18:V18 {
+		compatible = "regulator-fixed";
+		regulator-name = "vqmmc-supply";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
 	};
 
 	chosen {
@@ -301,4 +317,20 @@
  	qcom,ath11k-calibration-variant = "Yuncore-AX840";
 	qcom,ath11k-fw-memory-mode = <1>;
 	status = "okay";
+};
+
+&CPU0 {
+	/delete-property/ cpu-supply;
+};
+
+&CPU1 {
+	/delete-property/ cpu-supply;
+};
+
+&CPU2 {
+	/delete-property/ cpu-supply;
+};
+
+&CPU3 {
+	/delete-property/ cpu-supply;
 };
