@@ -15,7 +15,6 @@
 		led-failsafe = &led_system;
 		led-running = &led_system;
 		led-upgrade = &led_system;
-		label-mac-device = &gmac1;
 	};
 
 	chosen {
@@ -88,7 +87,7 @@
 	flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
-		spi-max-frequency = <80000000>;
+		spi-max-frequency = <50000000>;
 		m25p,fast-read;
 
 		partitions {
@@ -112,7 +111,7 @@
 			 * firmware, so we do not use it either
 			 */
 
-			factory: partition@50000 {
+			partition@50000 {
 				label = "Factory";
 				reg = <0x50000 0x40000>;
 				read-only;
@@ -122,15 +121,18 @@
 					#address-cells = <1>;
 					#size-cells = <1>;
 
+					eeprom_factory_0: eeprom@0 {
+						reg = <0x0 0xe00>;
+					};
 
-					macaddr_label: macaddr@0x4 {
-						reg = <0x4 0x6>;
+					precal_factory_e10: precal@e10 {
+						reg = <0xe10 0x19c10>;
 					};
-					macaddr_factory_e000: macaddr@0xe000 {
+
+					macaddr_factory_e000: macaddr@e000 {
+						compatible = "mac-base";
 						reg = <0xe000 0x6>;
-					};
-					macaddr_factory_e006: macaddr@0xe006 {
-						reg = <0xe006 0x6>;
+						#nvmem-cell-cells = <1>;
 					};
 				};
 			};
@@ -152,13 +154,14 @@
 	wifi@0,0 {
 		compatible = "mediatek,mt76";
 		reg = <0x0000 0 0 0 0>;
-		mediatek,mtd-eeprom = <&factory 0x0>;
+		nvmem-cells = <&eeprom_factory_0>, <&precal_factory_e10>;
+		nvmem-cell-names = "eeprom", "precal";
 		mediatek,disable-radar-background;
 	};
 };
 
 &gmac0 {
-	nvmem-cells = <&macaddr_factory_e000>;
+	nvmem-cells = <&macaddr_factory_e000 0>;
 	nvmem-cell-names = "mac-address";
 };
 
@@ -167,14 +170,12 @@
 	label = "wan";
 	phy-handle = <&ethphy0>;
 
-	nvmem-cells = <&macaddr_factory_e006>;
+	nvmem-cells = <&macaddr_factory_e000 1>;
 	nvmem-cell-names = "mac-address";
 };
 
-&mdio {
-	ethphy0: ethernet-phy@0 {
-		reg = <0>;
-	};
+&ethphy0 {
+	/delete-property/ interrupts;
 };
 
 &switch0 {
