@@ -383,6 +383,9 @@ hostapd_common_add_bss_config() {
 	config_add_string fils_dhcp
 
 	config_add_int ocv
+
+	config_add_boolean apup
+	config_add_string apup_peer_ifname_prefix
 }
 
 hostapd_set_vlan_file() {
@@ -434,7 +437,7 @@ append_iw_anqp_3gpp_cell_net() {
 	if [ -z "$iw_anqp_3gpp_cell_net_conf" ]; then
 		iw_anqp_3gpp_cell_net_conf="$1"
 	else
-		iw_anqp_3gpp_cell_net_conf="$iw_anqp_3gpp_cell_net_conf:$1"
+		iw_anqp_3gpp_cell_net_conf="$iw_anqp_3gpp_cell_net_conf;$1"
 	fi
 }
 
@@ -563,13 +566,13 @@ hostapd_set_bss_options() {
 		wps_independent wps_device_type wps_device_name wps_manufacturer wps_pin \
 		macfilter ssid utf8_ssid wmm uapsd hidden short_preamble rsn_preauth \
 		iapp_interface eapol_version dynamic_vlan ieee80211w nasid \
-		acct_secret acct_port acct_interval \
+		acct_secret acct_port acct_interval auth_secret auth_port \
 		bss_load_update_period chan_util_avg_period sae_require_mfp sae_pwe \
 		multi_ap multi_ap_backhaul_ssid multi_ap_backhaul_key skip_inactivity_poll \
 		ppsk airtime_bss_weight airtime_bss_limit airtime_sta_weight \
 		multicast_to_unicast_all proxy_arp per_sta_vif \
 		eap_server eap_user_file ca_cert server_cert private_key private_key_passwd server_id \
-		vendor_elements fils ocv
+		vendor_elements fils ocv apup
 
 	set_default fils 0
 	set_default isolate 0
@@ -593,6 +596,7 @@ hostapd_set_bss_options() {
 	set_default airtime_bss_weight 0
 	set_default airtime_bss_limit 0
 	set_default eap_server 0
+	set_default apup 0
 
 	/usr/sbin/hostapd -vfils || fils=0
 
@@ -636,8 +640,12 @@ hostapd_set_bss_options() {
 
 	[ -n "$acct_interval" ] && \
 		append bss_conf "radius_acct_interim_interval=$acct_interval" "$N"
+	set_default acct_port 1812
+	set_default auth_port 1812
 	json_for_each_item append_acct_server acct_server
 	json_for_each_item append_radius_acct_req_attr radius_acct_req_attr
+	json_for_each_item append_auth_server auth_server
+	json_for_each_item append_radius_auth_req_attr radius_auth_req_attr
 
 	[ -n "$ocv" ] && append bss_conf "ocv=$ocv" "$N"
 
@@ -674,9 +682,6 @@ hostapd_set_bss_options() {
 		psk|sae|psk-sae)
 			json_get_vars key wpa_psk_file
 			if [ "$auth_type" = "psk" ] && [ "$ppsk" -ne 0 ] ; then
-				json_get_vars auth_secret auth_port
-				set_default auth_port 1812
-				json_for_each_item append_auth_server auth_server
 				append bss_conf "macaddr_acl=2" "$N"
 				append bss_conf "wpa_psk_radius=2" "$N"
 			elif [ ${#key} -eq 64 ]; then
@@ -700,7 +705,6 @@ hostapd_set_bss_options() {
 		;;
 		eap|eap2|eap-eap2|eap192)
 			json_get_vars \
-				auth_server auth_secret auth_port \
 				dae_client dae_secret dae_port \
 				dynamic_ownip ownip radius_client_addr \
 				eap_reauth_period request_cui \
@@ -711,11 +715,6 @@ hostapd_set_bss_options() {
 			vlan_possible=1
 
 			set_default dynamic_ownip 1
-
-			# legacy compatibility
-			[ -n "$auth_server" ] || json_get_var auth_server server
-			[ -n "$auth_port" ] || json_get_var auth_port port
-			[ -n "$auth_secret" ] || json_get_var auth_secret key
 
 			[ "$fils" -gt 0 ] && {
 				set_default erp_domain "$mobility_domain"
@@ -741,7 +740,6 @@ hostapd_set_bss_options() {
 				[ -n "$fils_dhcp" ] && append bss_conf "dhcp_server=$fils_dhcp" "$N"
 			}
 
-			set_default auth_port 1812
 			set_default dae_port 3799
 			set_default request_cui 0
 
@@ -753,7 +751,6 @@ hostapd_set_bss_options() {
 				append bss_conf "radius_das_port=$dae_port" "$N"
 				append bss_conf "radius_das_client=$dae_client $dae_secret" "$N"
 			}
-			json_for_each_item append_radius_auth_req_attr radius_auth_req_attr
 
 			if [ -n "$ownip" ]; then
 				append bss_conf "own_ip_addr=$ownip" "$N"
@@ -1161,6 +1158,16 @@ hostapd_set_bss_options() {
 	set_default per_sta_vif 0
 	if [ "$per_sta_vif" -gt 0 ]; then
 		append bss_conf "per_sta_vif=$per_sta_vif" "$N"
+	fi
+
+	if [ "$apup" -gt 0 ]; then
+		append bss_conf "apup=$apup" "$N"
+
+		local apup_peer_ifname_prefix
+		json_get_vars apup_peer_ifname_prefix
+		if [ -n "$apup_peer_ifname_prefix" ] ; then
+			append bss_conf "apup_peer_ifname_prefix=$apup_peer_ifname_prefix" "$N"
+		fi
 	fi
 
 	json_get_values opts hostapd_bss_options
