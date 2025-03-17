@@ -68,6 +68,26 @@ define Package/uboot-envtools/conffiles
 	/etc/fw_sys.config
 endef
 
+define Package/uboot-envtools
+	SECTION:=utils
+	CATEGORY:=Utilities
+	SUBMENU:=Boot Loaders
+	PKG_FLAGS+=nonshared
+	TITLE:=read/modify U-Boot bootloader environment
+	URL:=http://www.denx.de/wiki/U-Boot
+endef
+
+define Package/uboot-envtools/description
+	This package includes tools to read and modify U-Boot
+	bootloader environment.
+endef
+
+define Package/uboot-envtools/conffiles
+	/etc/config/ubootenv
+	/etc/fw_env.config
+	/etc/fw_sys.config
+endef
+
 define Build/Configure
 	$(call Build/Compile/Default,tools-only_defconfig)
 	$(SED) 's/CONFIG_TOOLS_LIBCRYPTO=y/# CONFIG_TOOLS_LIBCRYPTO is not set/' $(PKG_BUILD_DIR)/.config
@@ -82,7 +102,6 @@ MAKE_FLAGS += \
 	V=$(if $(findstring c,$(OPENWRT_VERBOSE)),1,)
 
 define Build/Compile
-
 ifneq ($(CONFIG_PACKAGE_uboot-envtools),)
 	$(call Build/Compile/Default,envtools)
 endif
@@ -100,6 +119,9 @@ endef
 define Package/fit-check-sign/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/fit_check_sign $(1)/usr/bin
+endef
+
+	$(call Build/Compile/Default,envtools)
 endef
 
 define Package/uboot-envtools/install
