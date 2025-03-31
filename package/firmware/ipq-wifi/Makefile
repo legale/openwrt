@@ -76,7 +76,6 @@ ALLWIFIBOARDS:= \
 	spectrum_sax1v1k \
 	tplink_deco-x80-5g \
 	tplink_eap610-outdoor \
-	tplink_eap620hd-v1 \
 	tplink_eap623od-hd-v1 \
 	tplink_eap625-outdoor-hd-v1 \
 	tplink_eap660hd-v1 \
