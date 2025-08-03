@@ -25,7 +25,7 @@ boot() {
 		(
 		# Using brackets and & to prevent block on sleep
 		echo resetting owrt_bootcount in 5 min...
-		sleep 300 && fw_setenv owrt_bootcount 0
+		sleep 300 && fw_setenv owrt_bootcount0 1
 		) &
 	;;
 	esac
