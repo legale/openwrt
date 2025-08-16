@@ -345,5 +345,5 @@
 
 &wifi {
 	status = "okay";
-	qcom,ath11k-calibration-variant = "Fplus-WF-AP-624H-IIC";
+	qcom,ath11k-calibration-variant = "Yuncore-AX880";
 };

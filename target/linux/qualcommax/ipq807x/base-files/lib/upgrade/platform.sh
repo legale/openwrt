@@ -5,39 +5,34 @@ RAMFS_COPY_BIN='fw_printenv fw_setenv head'
 RAMFS_COPY_DATA='/etc/fw_env.config /var/lock/fw_printenv.lock'
 
 ax880_env_setup() {
-  local ver=19
+  local ver=21
   local cur_ver=$(fw_printenv -n owrt_env_ver 2>/dev/null)
   [ "$cur_ver" = "$ver" ] && return 0
 
   local slotactive=$(fw_printenv -n owrt_slotactive 2>/dev/null)
 
-  [ -z "$bootcount0$bootcount1$bootcount2$bootcount3$bootcount4$bootcount5" ] && bootcount0=1 && bootcount1=0 && bootcount2=0 && bootcount3=0 && bootcount4=0 && bootcount5=0
-  [ -z "$slot0$slot1" ] && slot0=1 && slot1=0
-
   cat > /tmp/env_tmp << EOF
-bootcount0=1
-bootcount1=0
-bootcount2=0
-bootcount3=0
-bootcount4=0
-bootcount5=0
-owrt_slotactive=$slot1
+owrt_bc0=1
+owrt_bc1=0
+owrt_bc2=0
+owrt_bc3=0
+owrt_bc4=0
+owrt_slotactive=$((slotactive ^ 1))
 # инкремент bootcount: ищет первую 1, сбрасывает в 0, следующую в 1, остальное не трогает
-owrt_bootinc=if test \$bootcount0 = 1; then setenv bootcount0 0; setenv bootcount1 1; saveenv; echo bootcount now 1; \
-elif test \$bootcount1 = 1; then setenv bootcount1 0; setenv bootcount2 1; saveenv; echo bootcount now 2; \
-elif test \$bootcount2 = 1; then setenv bootcount2 0; setenv bootcount3 1; saveenv; echo bootcount now 3; \
-elif test \$bootcount3 = 1; then setenv bootcount3 0; setenv bootcount4 1; saveenv; echo bootcount now 4; \
-elif test \$bootcount4 = 1; then setenv bootcount4 0; setenv bootcount5 1; saveenv; echo bootcount now 5; \
-else setenv bootcount0 1; setenv bootcount1 0; setenv bootcount2 0; setenv bootcount3 0; setenv bootcount4 0; setenv bootcount5 0; saveenv; echo bootcount reset to 0; fi
-# tftprecover если bootcount4=1
-owrt_bootcountcheck=if test \$bootcount4 = 1; then run owrt_tftprecover; fi; if test \$bootcount3 = 1; then run owrt_slotswap; else echo bootcountcheck successfull; fi
-bootcmd=if test -z \$bootcount0\$bootcount1\$bootcount2\$bootcount3\$bootcount4\$bootcount5; then setenv bootcount0 1; setenv bootcount1 0; setenv bootcount2 0; setenv bootcount3 0; setenv bootcount4 0; setenv bootcount5 0; saveenv; fi; run owrt_bootinc && run owrt_bootcountcheck && run owrt_slotselect && run owrt_bootlinux
-owrt_bootlinux=echo booting linux... && ubi part fs && ubi read 0x44000000 kernel && bootm; bootipq; reset
+owrt_bootinc=if test \$owrt_bc0 = 1; then setenv owrt_bc0 0; setenv owrt_bc1 1; saveenv; echo bootcount now 1; \
+elif test \$owrt_bc1 = 1; then setenv owrt_bc1 0; setenv owrt_bc2 1; saveenv; echo bootcount now 2; \
+elif test \$owrt_bc2 = 1; then setenv owrt_bc2 0; setenv owrt_bc3 1; saveenv; echo bootcount now 3; \
+elif test \$owrt_bc3 = 1; then setenv owrt_bc3 0; setenv owrt_bc4 1; saveenv; echo bootcount now 4; \
+else setenv owrt_bc0 1; setenv owrt_bc1 0; setenv owrt_bc2 0; setenv owrt_bc3 0; setenv owrt_bc4 0; saveenv; echo bootcount reset to 0; fi
+# tftprecover если owrt_bc4=1
+owrt_bootcountcheck=if test \$owrt_bc4 = 1; then run owrt_tftprecover; fi; if test \$owrt_bc3 = 1; then run owrt_slotswap; else echo bootcountcheck successfull; fi
+bootcmd=if test -z \$owrt_bc0\$owrt_bc1\$owrt_bc2\$owrt_bc3\$owrt_bc4; then setenv owrt_bc0 1; setenv owrt_bc1 0; setenv owrt_bc2 0; setenv owrt_bc3 0; setenv owrt_bc4 0; saveenv; fi; run owrt_bootinc && run owrt_bootcountcheck && run owrt_slotselect && run owrt_bootlinux
+owrt_bootlinux=echo booting linux... && ubi part fs && ubi read 0x44000000 kernel && bootm 0x44000000; bootipq; reset
 owrt_setslot0=setenv bootargs console=ttyMSM0,115200n8 ubi.mtd=rootfs rootwait && setenv mtdparts mtdparts=nand0:0x3400000@0x3c00000(fs)
 owrt_setslot1=setenv bootargs console=ttyMSM0,115200n8 ubi.mtd=rootfs_1 rootwait && setenv mtdparts mtdparts=nand0:0x3400000@0x0(fs)
 owrt_slotswap=if test \$owrt_slotactive = 1; then setenv owrt_slotactive 0; saveenv; echo slot swapped to 0; else setenv owrt_slotactive 1; saveenv; echo slot swapped to 1; fi
 owrt_slotselect=setenv mtdids nand0=nand0,nand1=spi0.0; if test \$owrt_slotactive = 1; then run owrt_setslot1; else run owrt_setslot0; fi
-owrt_tftprecover=echo trying to recover firmware with tftp... && sleep 10 && dhcp && flash rootfs && flash rootfs_1 && setenv bootcount0 1 && setenv bootcount1 0 && setenv bootcount2 0 && setenv bootcount3 0 && setenv bootcount4 0 && saveenv && reset
+owrt_tftprecover=echo trying to recover firmware with tftp... && sleep 10 && dhcp && flash rootfs && flash rootfs_1 && setenv owrt_bc0 1 && setenv owrt_bc1 0 && setenv owrt_bc2 0 && setenv owrt_bc3 0 && setenv owrt_bc4 0 && saveenv && reset
 owrt_env_ver=${ver}
 EOF
   fw_setenv --script /tmp/env_tmp
