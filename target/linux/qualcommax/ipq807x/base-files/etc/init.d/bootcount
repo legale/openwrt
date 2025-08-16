@@ -2,6 +2,17 @@
 
 START=99
 
+ax880_reset_bootcount(){
+cat <<EOF>/tmp/env_tmp
+owrt_bc0 1
+owrt_bc1 0
+owrt_bc2 0
+owrt_bc3 0
+owrt_bc4 0
+EOF
+fw_setenv --script /tmp/env_tmp
+}
+
 boot() {
 	case $(board_name) in
 	edgecore,eap102)
@@ -22,11 +33,7 @@ boot() {
 	;;
 	fplus,wf-ap-624h-iic|\
 	yuncore,ax880)
-		(
-		# Using brackets and & to prevent block on sleep
-		echo resetting owrt_bootcount in 5 min...
-		sleep 300 && fw_setenv owrt_bootcount0 1
-		) &
+		ax880_reset_bootcount;
 	;;
 	esac
 }
