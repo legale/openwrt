@@ -99,6 +99,25 @@ define Device/linksys_mr5500
 endef
 TARGET_DEVICES += linksys_mr5500
 
+define Device/fplus_wf-ap-624m-iic-v3
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	SOC := ipq5018
+	DEVICE_VENDOR := Fplus
+	DEVICE_TITLE := Fplus wf-ap-624m-iic-v3
+	DEVICE_MODEL := WF-AP-624M-IIC-V3
+	DEVICE_DTS := ipq5018-wf-ap-624m-iic-v3
+	SUPPORTED_DEVICES := ikuai,sw8v3 fplus,wf-ap-624m-iic-v3
+	DEVICE_DTS_CONFIG := config@mp03.1
+	IMAGES := sysupgrade.bin factory.bin factory.ubi
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+	IMAGE/factory.ubi := append-ubi	
+	DEVICE_PACKAGES := kmod-ath11k-pci ath11k-firmware-qcn9074 ipq-wifi-fplus_wf-ap-624m-iic-v3
+endef
+TARGET_DEVICES += fplus_wf-ap-624m-iic-v3
+
 define Device/linksys_mx2000
 	$(call Device/linksys_ipq50xx_mx_base)
 	DEVICE_MODEL := MX2000
