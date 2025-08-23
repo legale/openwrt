@@ -55,6 +55,8 @@ linksys,mx2000|\
 yuncore,ax830)
 	migrate_radio 'platform/soc@0/b00a040.wifi1' 'platform/soc@0/b00a040.wifi'
 	;;
+fplus,wf-ap-624m-iic-v1|\
+fplus,wf-ap-624m-iic-v3|\
 linksys,mr5500|\
 linksys,mx5500|\
 linksys,spnmx56)

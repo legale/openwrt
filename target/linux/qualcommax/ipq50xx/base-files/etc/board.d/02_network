@@ -29,6 +29,7 @@ ipq50xx_setup_interfaces()
 	yuncore,ax850)
 		ucidef_set_interfaces_lan_wan "lan" "wan"
 		;;
+	fplus,wf-ap-624m-iic-v1|\
 	fplus,wf-ap-624m-iic-v3)
 		ucidef_set_interfaces_lan_wan "lan" "wan"
 	esac

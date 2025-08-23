@@ -229,6 +229,9 @@ platform_do_upgrade() {
 		CI_ROOT_UBIPART="rootfs"
 		nand_do_upgrade "$1"
 		;;
+	ikuai,sw8v3|\
+	fplus,wf-ap-624m-iic-v1|\
+	fplus,wf-ap-624m-iic-v3|\
 	yuncore,ax830|\
 	yuncore,ax850|\
 	zyxel,scr50axe)
