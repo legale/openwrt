@@ -48,6 +48,8 @@ migrate_radio()
 WIRELESS_CHANGED=false
 
 case "$(board_name)" in
+fplus,wf-ap-624m-iic-v1|\
+fplus,wf-ap-624m-iic-v3|\
 linksys,mr5500|\
 linksys,mx5500|\
 linksys,spnmx56)

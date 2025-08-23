@@ -15,6 +15,10 @@ iodata,wn-dax3000gr)
 glinet,gl-b3000)
 	ubootenv_add_mtd "0:APPSBLENV" "0x0" "0x40000" "0x20000"
 	;;
+fplus,wf-ap-624m-iic-v1|\
+fplus,wf-ap-624m-iic-v3)
+	ubootenv_add_mtd "0:APPSBLENV" "0x0" "0x00010000" "0x00001000"
+	;;
 linksys,mr5500|\
 linksys,mx2000|\
 linksys,mx5500|\
