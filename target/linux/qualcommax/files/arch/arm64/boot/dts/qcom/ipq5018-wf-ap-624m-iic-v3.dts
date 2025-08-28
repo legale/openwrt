@@ -196,14 +196,32 @@
                 bias-disable;
         };
 
-        blsp1_spi1_pins: blsp1_spi1_pins {
-                mux {
-                        pins = "gpio10", "gpio11", "gpio12", "gpio13";
-                        function = "blsp1_spi1";
-                        drive-strength = <8>;
-                        bias-disable;
-                };
-        };
+	blsp1_spi1_pins: blsp1-spi1-pins {
+		spi1-clk {
+			pins = "gpio10";
+			function = "blsp1_spi1";
+			drive-strength = <8>;
+			bias-disable;
+		};
+		spi1-miso {
+			pins = "gpio11";
+			function = "blsp1_spi1";
+			drive-strength = <8>;
+			bias-disable;
+		};
+		spi1-mosi {
+			pins = "gpio12";
+			function = "blsp1_spi1";
+			drive-strength = <8>;
+			bias-disable;
+		};
+		spi1-cs0 {
+			pins = "gpio13"; /* native cs0 на tlmm, если разведен иначе — см. cs-gpios */
+			function = "blsp1_spi1";
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+	};
 
         qpic_nand_pins: qpic_nand_pins {
                 qspi_clock {
@@ -257,7 +275,7 @@
                 #address-cells = <1>;
                 #size-cells = <1>;
                 reg = <0>;
-                compatible = "w25q128fw";
+                compatible = "jedec,spi-nor", "w25q128fw";
                 linux,modalias = "m25p80", "w25q128fw";
                 spi-max-frequency = <50000000>;
                 use-default-sizes;
