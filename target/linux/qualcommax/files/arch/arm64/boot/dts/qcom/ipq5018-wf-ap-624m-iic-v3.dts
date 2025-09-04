@@ -325,7 +325,7 @@
 			};
 
 			partition@330000 {
-				label = "0:art";
+				label = "0:ART";
 				reg = <0x330000 0x70000>;
 				read-only;
 
@@ -368,12 +368,6 @@
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
 			#size-cells = <1>;
-
-			partition@440000 {
-				label = "0:ART";
-				reg = <0x00440000 0x100000>;
-				read-only;
-			};
 
 			partition@1 {
 				label = "rootfs";
