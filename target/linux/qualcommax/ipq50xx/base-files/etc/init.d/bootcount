@@ -12,7 +12,7 @@ boot() {
 	;;
 	fplus,wf-ap-624m-iic-v1|\
 	fplus,wf-ap-624m-iic-v3)
-		echo todo this part
+		fw_setenv owrt_bootcount 0
 	;;
 	esac
 }
