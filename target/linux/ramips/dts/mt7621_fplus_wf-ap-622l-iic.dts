@@ -104,7 +104,6 @@
 			partition@30000 {
 				label = "Config";
 				reg = <0x30000 0x10000>;
-				read-only;
 			};
 
 			/* range 0x40000 to 0x50000 is empty in vendor
