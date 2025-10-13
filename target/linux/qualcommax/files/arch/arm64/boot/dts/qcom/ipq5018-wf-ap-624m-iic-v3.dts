@@ -9,7 +9,7 @@
 #include <dt-bindings/leds/common.h>
 
 / {
-	model = "fplus wf-ap-624m-iic-v3";
+	model = "Fplus wf-ap-624m-iic-v3";
 	compatible = "fplus,wf-ap-624m-iic-v3", "qcom,ipq5018", "mp03.1";
 
 	aliases {
