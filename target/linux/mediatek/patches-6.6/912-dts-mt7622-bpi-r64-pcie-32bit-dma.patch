@@ -1,0 +1,30 @@
+--- /dev/null
++++ b/arch/arm64/boot/dts/mediatek/mt7622-bananapi-bpi-r64-pcie-32bit-dma.dtso
+@@ -0,0 +1,27 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR MIT) */
++
++#include <dt-bindings/gpio/gpio.h>
++
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "bananapi,bpi-r64", "mediatek,mt7622";
++
++    fragment@0 {
++        target = <&asmsel>;
++        __overlay__ {
++            // enable PCIe (GPIO90=high)
++            gpios = <90 GPIO_ACTIVE_HIGH>;
++        };
++    };
++
++    fragment@1 {
++        target = <&pcie>;
++        __overlay__ {
++            status = "okay";
++            // 32-bit DMA limit
++						 dma-ranges = <0x02000000 0x0 0x00000000 0x0 0x00000000 0x1 0x00000000>;
++        };
++    };
++};
