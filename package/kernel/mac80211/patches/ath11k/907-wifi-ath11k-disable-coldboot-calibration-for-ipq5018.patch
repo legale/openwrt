@@ -14,8 +14,8 @@ Signed-off-by: George Moussalem <george.moussalem@outlook.com>
 
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -700,8 +700,8 @@ static struct ath11k_hw_params ath11k_hw
- 		.supports_suspend = false,
+@@ -711,8 +711,8 @@ static struct ath11k_hw_params ath11k_hw
+ 		.supports_ap_vlan = true,
  		.hal_params = &ath11k_hw_hal_params_ipq8074,
  		.single_pdev_only = false,
 -		.coldboot_cal_mm = true,
