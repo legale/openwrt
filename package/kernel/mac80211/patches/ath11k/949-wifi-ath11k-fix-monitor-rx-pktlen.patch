@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: 
+Date: Sat, 28 Feb 2026 00:00:00 +0000
+Subject: [PATCH] wifi: ath11k: fix monitor RX packet length (OpenWrt #16183)
+
+In monitor path the MSDU length was taken from the link descriptor
+(REO/firmware). For IPQ6018/IPQ807x the firmware reports 8 extra bytes,
+causing radiotap frames to end with garbage. Wireshark showed "Tag Length
+is longer than remaining payload" and "Malformed Packet".
+
+Fix by using the length from hal_rx_desc in the buffer (same source as
+normal RX path) for non-fragmented MSDUs. For fragmented MSDUs the link
+descriptor is still needed; apply rx_buf_size -= 8 workaround there.
+
+Fixes: OpenWrt issue #16183
+Link: https://github.com/openwrt/openwrt/issues/16183
+
+--- a/drivers/net/wireless/ath/ath11k/dp_rx.c
++++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
+@@ -4826,7 +4826,14 @@ u32 ath11k_dp_rx_mon_mpdu_pop(struct ath11k *ar, int mac_id,
+ 		ath11k_dp_mon_get_buf_len(&msdu_list.msdu_info[i],
+ 					  &is_frag, &total_len,
+ 					  &frag_len, &msdu_cnt);
+-			rx_buf_size = rx_pkt_offset + l2_hdr_offset + frag_len;
++			if (!is_frag)
++				rx_buf_size = rx_pkt_offset + l2_hdr_offset +
++					ath11k_dp_rx_h_msdu_start_msdu_len(ar->ab, rx_desc);
++			else {
++				rx_buf_size = rx_pkt_offset + l2_hdr_offset + frag_len;
++				if (rx_buf_size >= 8)
++					rx_buf_size -= 8;
++			}
+ 
+ 			ath11k_dp_pkt_set_pktlen(msdu, rx_buf_size);
+ 
+@@ -5448,7 +5455,14 @@ static u32 ath11k_dp_rx_monitor_sw_ppdu_pop(struct ath11k *ar,
+ 		ath11k_dp_mon_get_buf_len(&msdu_list.msdu_info[i],
+ 					  &is_frag, &total_len,
+ 					  &frag_len, &msdu_cnt);
+-
+-			rx_buf_size = rx_pkt_offset + l2_hdr_offset + frag_len;
++
++			if (!is_frag)
++				rx_buf_size = rx_pkt_offset + l2_hdr_offset +
++					ath11k_dp_rx_h_msdu_start_msdu_len(ar->ab, rx_desc);
++			else {
++				rx_buf_size = rx_pkt_offset + l2_hdr_offset + frag_len;
++				if (rx_buf_size >= 8)
++					rx_buf_size -= 8;
++			}
+ 
+ 			ath11k_dp_pkt_set_pktlen(msdu, rx_buf_size);
