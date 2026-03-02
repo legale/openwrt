@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/configs/mt7621_yuncore_ax820_defconfig
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,107 @@
 +CONFIG_MIPS=y
 +CONFIG_SYS_HAS_NONCACHED_MEMORY=y
 +CONFIG_SYS_MALLOC_LEN=0x100000
@@ -57,7 +57,7 @@
 +# CONFIG_CMD_MMC is not set
 +CONFIG_CMD_MTD=y
 +CONFIG_CMD_SF_TEST=y
-+# CONFIG_CMD_BOOTP is not set
++CONFIG_CMD_BOOTP=y
 +CONFIG_CMD_PING=y
 +CONFIG_CMD_HASH=y
 +# CONFIG_DOS_PARTITION is not set
@@ -97,7 +97,17 @@
 +# CONFIG_BINMAN_FDT is not set
 +CONFIG_LZMA=y
 +# CONFIG_GZIP is not set
++CONFIG_CMD_UNZIP=y
++CONFIG_CMD_ZIP=y
 +CONFIG_SPL_LZMA=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_WRITE=y
++CONFIG_CMD_TFTPPUT=y
++CONFIG_CMD_DHCP=y
++CONFIG_CMD_DNS=y
++CONFIG_CMD_PING=y
++CONFIG_CMD_TFTPBOOT=y
++CONFIG_CMD_WGET=y
 --- /dev/null
 +++ b/defenvs/yuncore_ax820_env
 @@ -0,0 +1,36 @@
@@ -139,15 +149,13 @@
 +_bootmenu_update_title=setenv _bootmenu_update_title ; setenv bootmenu_title "$bootmenu_title       [33m$ver[0m"
 --- /dev/null
 +++ b/arch/mips/dts/yuncore,ax820.dts
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,109 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 +
 +/dts-v1/;
 +
 +#include "mt7621.dtsi"
 +#include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/input/input.h>
-+#include <dt-bindings/leds/common.h>
 +
 +/ {
 +	compatible = "yuncore,ax820", "fplus,wf-ap-622l-iic", "mediatek,mt7621-soc";
