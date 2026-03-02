@@ -75,6 +75,16 @@ define U-Boot/mt7621_nand_rfb
   UBOOT_IMAGE:=u-boot-mt7621.bin
 endef
 
+define U-Boot/mt7621_yuncore_ax820
+  NAME:=Yuncore AX820
+  UBOOT_CONFIG:=mt7621_yuncore_ax820
+  BUILD_DEVICES:=yuncore_ax820
+  BUILD_TARGET:=ramips
+  BUILD_SUBTARGET:=mt7621
+  UBOOT_IMAGE:=u-boot-mt7621.bin
+endef
+
+
 define U-Boot/mt7621_zbtlink_zbt-wg3526-16m
   NAME:=Zbtlink ZBT-WG3526-16m
   UBOOT_CONFIG:=mt7621_zbtlink_zbt-wg3526-16m
@@ -1126,6 +1136,7 @@ UBOOT_TARGETS := \
 	mt7620_rfb \
 	mt7621_nand_rfb \
 	mt7621_rfb \
+	mt7621_yuncore_ax820 \
 	mt7621_zbtlink_zbt-wg3526-16m \
 	mt7622_bananapi_bpi-r64-emmc \
 	mt7622_bananapi_bpi-r64-sdmmc \
