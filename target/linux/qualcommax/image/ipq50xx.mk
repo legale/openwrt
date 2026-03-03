@@ -132,7 +132,10 @@ define Device/fplus_wf-ap-624m-iic-v1
 	IMAGES := sysupgrade.bin factory.bin factory.ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 	IMAGE/factory.ubi := append-ubi
-	DEVICE_PACKAGES := kmod-ath11k-pci ath11k-firmware-qcn9074 ipq-wifi-fplus_wf-ap-624m-iic-v1
+	DEVICE_PACKAGES := ath11k-firmware-ipq5018 \
+		kmod-ath11k-pci \
+		ath11k-firmware-qcn9074 \
+		ipq-wifi-fplus_wf-ap-624m-iic-v1
 endef
 TARGET_DEVICES += fplus_wf-ap-624m-iic-v1
 
@@ -151,7 +154,10 @@ define Device/fplus_wf-ap-624m-iic-v3
 	IMAGES := sysupgrade.bin factory.bin factory.ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 	IMAGE/factory.ubi := append-ubi	
-	DEVICE_PACKAGES := kmod-ath11k-pci ath11k-firmware-qcn9074 ipq-wifi-fplus_wf-ap-624m-iic-v3
+	DEVICE_PACKAGES := ath11k-firmware-ipq5018 \
+		kmod-ath11k-pci \
+		ath11k-firmware-qcn9074 \
+		ipq-wifi-fplus_wf-ap-624m-iic-v3
 endef
 TARGET_DEVICES += fplus_wf-ap-624m-iic-v3
 
