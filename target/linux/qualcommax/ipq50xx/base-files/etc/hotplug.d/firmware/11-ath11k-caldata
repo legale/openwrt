@@ -32,6 +32,8 @@ case "$FIRMWARE" in
 		ath11k_remove_regdomain
 		ath11k_set_macflag
 		;;
+	ikuai,sw8v1|\
+	ikuai,sw8v2|\
 	ikuai,sw8v3|\
 	fplus,wf-ap-624m-iic-v1|\
 	fplus,wf-ap-624m-iic-v3)
@@ -114,8 +116,14 @@ case "$FIRMWARE" in
 	;;
 "ath11k/QCN9074/hw1.0/cal-pci-0000:01:00.0.bin")
 	case "$board" in
+	ikuai,sw8v1|\
+	ikuai,sw8v2|\
+	ikuai,sw8v3|\
 	fplus,wf-ap-624m-iic-v1|\
-	fplus,wf-ap-624m-iic-v3|\
+	fplus,wf-ap-624m-iic-v3)
+		caldata_extract "0:ART" 0x26800 0x20000
+		ath11k_remove_regdomain
+		;;
 	linksys,mr5500|\
 	linksys,mx5500|\
 	linksys,spnmx56)
