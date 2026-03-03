@@ -125,7 +125,7 @@ define Device/linksys_mr5500
 	$(call Device/linksys_ipq50xx_mx_base)
 	DEVICE_MODEL := MR5500
 	DEVICE_DTS_CONFIG := config@mp03.1
-	DEVICE_PACKAGES := ath11k-firmware-ipq5018 \
+	DEVICE_PACKAGES := ath11k-firmware-ipq5018-qcn6122 \
 		kmod-ath11k-pci \
 		ath11k-firmware-qcn9074 \
 		ipq-wifi-linksys_mr5500 \
@@ -148,7 +148,7 @@ define Device/fplus_wf-ap-624m-iic-v1
 	IMAGES := sysupgrade.bin factory.bin factory.ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 	IMAGE/factory.ubi := append-ubi
-	DEVICE_PACKAGES := ath11k-firmware-ipq5018 \
+	DEVICE_PACKAGES := ath11k-firmware-ipq5018-qcn6122 \
 		kmod-ath11k-pci \
 		ath11k-firmware-qcn9074 \
 		ipq-wifi-fplus_wf-ap-624m-iic-v1
@@ -170,7 +170,7 @@ define Device/fplus_wf-ap-624m-iic-v3
 	IMAGES := sysupgrade.bin factory.bin factory.ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
 	IMAGE/factory.ubi := append-ubi	
-	DEVICE_PACKAGES := ath11k-firmware-ipq5018 \
+	DEVICE_PACKAGES := ath11k-firmware-ipq5018-qcn6122 \
 		kmod-ath11k-pci \
 		ath11k-firmware-qcn9074 \
 		ipq-wifi-fplus_wf-ap-624m-iic-v3

@@ -39,13 +39,6 @@
 		};
 	};
 
-	reserved-memory {
-		q6_mem_regions: q6_mem_regions@4b000000 {
-			no-map;
-			reg = <0x0 0x4b000000 0x0 0x3000000>;
-		};
-	};
-
 	leds {
 		compatible = "gpio-leds";
 		led_system: system {
@@ -69,6 +62,10 @@
 			gpios = <&tlmm 30 GPIO_ACTIVE_HIGH>;
 		};
 	};
+};
+
+&q6_region {
+	reg = <0x0 0x4b000000 0x0 0x3000000>;
 };
 
 &sleep_clk {
@@ -422,7 +419,14 @@
 
 &q6v5_wcss {
 	status = "okay";
-	memory-region = <&q6_mem_regions>;
+	compatible = "qcom,ipq5018-q6-mpd";
+	reg = <0x0cd00000 0x4040>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+	clocks = <&gcc GCC_XO_CLK>,
+		 <&gcc GCC_SLEEP_CLK_SRC>,
+		 <&gcc GCC_SYS_NOC_WCSS_AHB_CLK>;
 	firmware-name = "ath11k/IPQ5018/hw1.0/q6_fw.mdt", "ath11k/IPQ5018/hw1.0/m3_fw.mdt";
 
 	//IPQ5018
@@ -478,5 +482,3 @@
 
 	status = "okay";
 };
-
-
