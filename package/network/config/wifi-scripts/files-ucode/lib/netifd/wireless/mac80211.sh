@@ -323,7 +323,7 @@ function setup() {
 		system(`ucode /usr/share/hostap/wdev.uc ${data.phy} set_config '${wdev_config}'`);
 	}
 
-	if (length(supplicant_data) > 0 && fs.access('/usr/sbin/wpa_supplicant', 'x'))
+	if (fs.access('/usr/sbin/wpa_supplicant', 'x'))
 		supplicant.setup(supplicant_data, data);
 
 	if (fs.access('/usr/sbin/hostapd', 'x'))
