@@ -1,8 +1,8 @@
-Index: mt76-2026.01.28~b2fe7f14/mac80211.c
+Index: mt76-2025.11.06~eb567bc7/mac80211.c
 ===================================================================
---- mt76-2026.01.28~b2fe7f14.orig/mac80211.c
-+++ mt76-2026.01.28~b2fe7f14/mac80211.c
-@@ -1027,9 +1027,21 @@ int __mt76_set_channel(struct mt76_phy *
+--- mt76-2025.11.06~eb567bc7.orig/mac80211.c
++++ mt76-2025.11.06~eb567bc7/mac80211.c
+@@ -1021,9 +1021,21 @@ int __mt76_set_channel(struct mt76_phy *
  		       bool offchannel)
  {
  	struct mt76_dev *dev = phy->dev;
@@ -24,7 +24,7 @@ Index: mt76-2026.01.28~b2fe7f14/mac80211.c
  	set_bit(MT76_RESET, &phy->state);
  
  	mt76_worker_disable(&dev->tx_worker);
-@@ -1052,6 +1064,40 @@ int __mt76_set_channel(struct mt76_phy *
+@@ -1046,6 +1058,40 @@ int __mt76_set_channel(struct mt76_phy *
  
  	ret = dev->drv->set_channel(phy);
  
@@ -65,7 +65,7 @@ Index: mt76-2026.01.28~b2fe7f14/mac80211.c
  	clear_bit(MT76_RESET, &phy->state);
  	mt76_worker_enable(&dev->tx_worker);
  	mt76_worker_schedule(&dev->tx_worker);
-@@ -1939,16 +1985,49 @@ void mt76_sw_scan(struct ieee80211_hw *h
+@@ -1923,16 +1969,49 @@ void mt76_sw_scan(struct ieee80211_hw *h
  		  const u8 *mac)
  {
  	struct mt76_phy *phy = hw->priv;
@@ -115,11 +115,11 @@ Index: mt76-2026.01.28~b2fe7f14/mac80211.c
  }
  EXPORT_SYMBOL_GPL(mt76_sw_scan_complete);
  
-Index: mt76-2026.01.28~b2fe7f14/mt76.h
+Index: mt76-2025.11.06~eb567bc7/mt76.h
 ===================================================================
---- mt76-2026.01.28~b2fe7f14.orig/mt76.h
-+++ mt76-2026.01.28~b2fe7f14/mt76.h
-@@ -877,6 +877,14 @@ struct mt76_phy {
+--- mt76-2025.11.06~eb567bc7.orig/mt76.h
++++ mt76-2025.11.06~eb567bc7/mt76.h
+@@ -876,6 +876,14 @@ struct mt76_phy {
  	bool offchannel;
  	bool radar_enabled;
  
@@ -134,21 +134,23 @@ Index: mt76-2026.01.28~b2fe7f14/mt76.h
  	struct delayed_work roc_work;
  	struct ieee80211_vif *roc_vif;
  	struct mt76_vif_link *roc_link;
-@@ -1022,6 +1030,9 @@ struct mt76_dev {
+@@ -1021,6 +1029,11 @@ struct mt76_dev {
  		struct mt76_vif_link *mlink;
  		struct mt76_phy *phy;
  		int chan_idx;
++
++		/* Debug timing for scan start/end */
 +		u64 start_boottime_ns;
 +		u32 start_main_freq;
 +		u32 start_first_freq;
- 		bool beacon_wait;
- 		bool beacon_received;
  	} scan;
-Index: mt76-2026.01.28~b2fe7f14/scan.c
+ 
+ #ifdef CONFIG_NL80211_TESTMODE
+Index: mt76-2025.11.06~eb567bc7/scan.c
 ===================================================================
---- mt76-2026.01.28~b2fe7f14.orig/scan.c
-+++ mt76-2026.01.28~b2fe7f14/scan.c
-@@ -10,15 +10,32 @@ static void mt76_scan_complete(struct mt
+--- mt76-2025.11.06~eb567bc7.orig/scan.c
++++ mt76-2025.11.06~eb567bc7/scan.c
+@@ -10,15 +10,33 @@ static void mt76_scan_complete(struct mt
  	struct cfg80211_scan_info info = {
  		.aborted = abort,
  	};
@@ -170,7 +172,7 @@ Index: mt76-2026.01.28~b2fe7f14/scan.c
 +
  	clear_bit(MT76_SCANNING, &phy->state);
  
- 	if (dev->scan.chan && phy->main_chandef.chan && phy->offchannel &&
+ 	if (dev->scan.chan && phy->main_chandef.chan &&
  	    !test_bit(MT76_MCU_RESET, &dev->phy.state))
  		mt76_set_channel(phy, &phy->main_chandef, false);
 +
@@ -178,28 +180,29 @@ Index: mt76-2026.01.28~b2fe7f14/scan.c
 +	       "mt76: event=scan_hw_done ts_ms=%llu chip=0x%04x band=%u main_freq=%u last_freq=%u dur_ms=%llu aborted=%d\n",
 +	       (unsigned long long)now_ms, mt76_chip(dev), phy->band_idx,
 +	       main_freq, last_freq, (unsigned long long)dur_ms, abort);
++
  	mt76_put_vif_phy_link(phy, dev->scan.vif, dev->scan.mlink);
  	memset(&dev->scan, 0, sizeof(dev->scan));
  	if (!test_bit(MT76_MCU_RESET, &dev->phy.state))
-@@ -103,7 +120,7 @@ void mt76_scan_work(struct work_struct *
+@@ -86,7 +104,7 @@ void mt76_scan_work(struct work_struct *
  	struct cfg80211_scan_request *req = dev->scan.req;
  	struct cfg80211_chan_def chandef = {};
  	struct mt76_phy *phy = dev->scan.phy;
 -	int duration = HZ / 9; /* ~110 ms */
 +	int duration = HZ / 30; /* ~33 ms */
- 	bool beacon_rx;
  	int i;
  
-@@ -143,7 +160,7 @@ void mt76_scan_work(struct work_struct *
+ 	if (dev->scan.chan_idx >= req->n_channels) {
+@@ -108,7 +126,7 @@ void mt76_scan_work(struct work_struct *
+ 	    chandef.chan->flags & (IEEE80211_CHAN_NO_IR | IEEE80211_CHAN_RADAR))
+ 		goto out;
  
- probe:
- 	if (phy->offchannel)
--		duration = HZ / 16; /* ~60 ms */
-+		duration = HZ / 50; /* ~20 ms */
+-	duration = HZ / 16; /* ~60 ms */
++	duration = HZ / 50; /* ~20 ms */
  	local_bh_disable();
  	for (i = 0; i < req->n_ssids; i++)
  		mt76_scan_send_probe(dev, &req->ssids[i]);
-@@ -165,6 +182,8 @@ int mt76_hw_scan(struct ieee80211_hw *hw
+@@ -130,6 +148,8 @@ int mt76_hw_scan(struct ieee80211_hw *hw
  	struct mt76_dev *dev = phy->dev;
  	struct mt76_vif_link *mlink;
  	int ret = 0;
@@ -208,7 +211,7 @@ Index: mt76-2026.01.28~b2fe7f14/scan.c
  
  	if (hw->wiphy->n_radio > 1) {
  		phy = dev->band_phys[req->req.channels[0]->band];
-@@ -186,11 +205,27 @@ int mt76_hw_scan(struct ieee80211_hw *hw
+@@ -151,11 +171,27 @@ int mt76_hw_scan(struct ieee80211_hw *hw
  		goto out;
  	}
  
@@ -236,10 +239,10 @@ Index: mt76-2026.01.28~b2fe7f14/scan.c
  	ieee80211_queue_delayed_work(dev->phy.hw, &dev->scan_work, 0);
  
  out:
-Index: mt76-2026.01.28~b2fe7f14/mt7915/main.c
+Index: mt76-2025.11.06~eb567bc7/mt7915/main.c
 ===================================================================
---- mt76-2026.01.28~b2fe7f14.orig/mt7915/main.c
-+++ mt76-2026.01.28~b2fe7f14/mt7915/main.c
+--- mt76-2025.11.06~eb567bc7.orig/mt7915/main.c
++++ mt76-2025.11.06~eb567bc7/mt7915/main.c
 @@ -324,9 +324,52 @@ int mt7915_set_channel(struct mt76_phy *
  {
  	struct mt7915_phy *phy = mphy->priv;
@@ -321,7 +324,7 @@ Index: mt76-2026.01.28~b2fe7f14/mt7915/main.c
  
  out:
  	if (!mt76_testmode_enabled(phy->mt76))
-@@ -897,6 +950,7 @@ static void mt7915_tx(struct ieee80211_h
+@@ -895,6 +948,7 @@ static void mt7915_tx(struct ieee80211_h
  	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
  	struct ieee80211_vif *vif = info->control.vif;
  	struct mt76_wcid *wcid = &dev->mt76.global_wcid;
@@ -329,7 +332,7 @@ Index: mt76-2026.01.28~b2fe7f14/mt7915/main.c
  
  	if (control->sta) {
  		struct mt7915_sta *sta;
-@@ -912,6 +966,22 @@ static void mt7915_tx(struct ieee80211_h
+@@ -910,6 +964,22 @@ static void mt7915_tx(struct ieee80211_h
  		wcid = &mvif->sta.wcid;
  	}
  
@@ -352,11 +355,11 @@ Index: mt76-2026.01.28~b2fe7f14/mt7915/main.c
  	mt76_tx(mphy, control->sta, wcid, skb);
  }
  
-Index: mt76-2026.01.28~b2fe7f14/mt7915/mt7915.h
+Index: mt76-2025.11.06~eb567bc7/mt7915/mt7915.h
 ===================================================================
---- mt76-2026.01.28~b2fe7f14.orig/mt7915/mt7915.h
-+++ mt76-2026.01.28~b2fe7f14/mt7915/mt7915.h
-@@ -226,6 +226,17 @@ struct mt7915_phy {
+--- mt76-2025.11.06~eb567bc7.orig/mt7915/mt7915.h
++++ mt76-2025.11.06~eb567bc7/mt7915/mt7915.h
+@@ -224,6 +224,17 @@ struct mt7915_phy {
  	struct mt76_mib_stats mib;
  	struct mt76_channel_state state_ts;
  
@@ -374,11 +377,11 @@ Index: mt76-2026.01.28~b2fe7f14/mt7915/mt7915.h
  	bool sku_limit_en:1;
  	bool sku_path_en:1;
  
-Index: mt76-2026.01.28~b2fe7f14/mt7915/mcu.c
+Index: mt76-2025.11.06~eb567bc7/mt7915/mcu.c
 ===================================================================
---- mt76-2026.01.28~b2fe7f14.orig/mt7915/mcu.c
-+++ mt76-2026.01.28~b2fe7f14/mt7915/mcu.c
-@@ -2789,6 +2789,7 @@ int mt7915_mcu_set_chan_info(struct mt79
+--- mt76-2025.11.06~eb567bc7.orig/mt7915/mcu.c
++++ mt76-2025.11.06~eb567bc7/mt7915/mcu.c
+@@ -2787,6 +2787,7 @@ int mt7915_mcu_set_chan_info(struct mt79
  	struct cfg80211_chan_def *chandef = &phy->mt76->chandef;
  	int freq1 = chandef->center_freq1;
  	u8 band = phy->mt76->band_idx;
@@ -386,7 +389,7 @@ Index: mt76-2026.01.28~b2fe7f14/mt7915/mcu.c
  	struct {
  		u8 control_ch;
  		u8 center_ch;
-@@ -2847,7 +2848,32 @@ int mt7915_mcu_set_chan_info(struct mt79
+@@ -2845,7 +2846,32 @@ int mt7915_mcu_set_chan_info(struct mt79
  		req.center_ch2 = ieee80211_frequency_to_channel(freq2);
  	}
  
