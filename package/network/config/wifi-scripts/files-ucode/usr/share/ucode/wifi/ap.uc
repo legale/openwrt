@@ -52,7 +52,7 @@ function iface_setup(config) {
 	append_string_vars(config, [ 'ssid2' ]);
 
 	append_vars(config, [
-		'ctrl_interface', 'ap_isolate', 'max_num_sta', 'ap_max_inactivity', 'airtime_bss_weight',
+		'ctrl_interface', 'ap_isolate', 'max_num_sta', 'airtime_bss_weight',
 		'airtime_bss_limit', 'airtime_sta_weight', 'bss_load_update_period', 'chan_util_avg_period',
 		'disassoc_low_ack', 'skip_inactivity_poll', 'ignore_broadcast_ssid', 'uapsd_advertisement_enabled',
 		'utf8_ssid', 'multi_ap', 'multi_ap_vlanid', 'multi_ap_profile', 'tdls_prohibit', 'bridge',
@@ -61,6 +61,12 @@ function iface_setup(config) {
 		'bss_transition', 'wnm_sleep_mode', 'wnm_sleep_mode_no_keys', 'qos_map_set', 'max_listen_int',
 		'dtim_period', 'wmm_enabled', 'start_disabled', 'na_mcast_to_ucast', 'no_probe_resp_if_max_sta',
 	]);
+
+	if (config.ap_max_inactivity == 0)
+		/* hostapd treats 0 as immediate timeout, emulate "disabled" with a very high value */
+		append('ap_max_inactivity', 31536000);
+	else if (config.ap_max_inactivity > 0)
+		append_vars(config, [ 'ap_max_inactivity' ]);
 }
 
 function iface_authentication_server(config) {
@@ -199,7 +205,7 @@ function iface_auth_type(config) {
 		'wpa_group_rekey', 'wpa_ptk_rekey', 'wpa_gmk_rekey', 'wpa_strict_rekey',
 		'macaddr_acl', 'wpa_psk_radius', 'wpa_psk', 'wpa_passphrase', 'wpa_psk_file',
 		'eapol_version', 'dynamic_vlan', 'radius_request_cui', 'eap_reauth_period',
-		'radius_das_client', 'radius_das_port', 'own_ip_addr', 'dynamic_own_ip_addr',
+		'radius_das_client', 'radius_das_port', 'own_ip_addr', 'dynamic_own_ip_addr', 'radius_client_addr',
 		'wpa_disable_eapol_key_retries', 'auth_algs', 'wpa', 'wpa_pairwise',
 		'erp_domain', 'fils_realm', 'erp_send_reauth_start', 'fils_cache_id'
 	]);
