@@ -69,7 +69,12 @@ function iface_authentication_server(config) {
 		append_vars(config, [ 'auth_server_port', 'auth_server_shared_secret' ]);
 	}
 
-	append_vars(config, [ 'radius_auth_req_attr' ]);
+	if (type(config.radius_auth_req_attr) == 'array') {
+		for (let attr in config.radius_auth_req_attr)
+			append('radius_auth_req_attr', attr);
+	} else {
+		append('radius_auth_req_attr', config.radius_auth_req_attr);
+	}
 }
 
 function iface_accounting_server(config) {
@@ -78,7 +83,12 @@ function iface_accounting_server(config) {
 		append_vars(config, [ 'acct_server_port', 'acct_server_shared_secret' ]);
 	}
 
-	append_vars(config, [ 'radius_acct_req_attr' ]);
+	if (type(config.radius_acct_req_attr) == 'array') {
+		for (let attr in config.radius_acct_req_attr)
+			append('radius_acct_req_attr', attr);
+	} else {
+		append('radius_acct_req_attr', config.radius_acct_req_attr);
+	}
 }
 
 function iface_auth_type(config) {
