@@ -52,7 +52,7 @@ function iface_setup(config) {
 	append_string_vars(config, [ 'ssid2' ]);
 
 	append_vars(config, [
-		'ctrl_interface', 'ap_isolate', 'max_num_sta', 'ap_max_inactivity', 'airtime_bss_weight',
+		'ctrl_interface', 'ap_isolate', 'max_num_sta', 'airtime_bss_weight',
 		'airtime_bss_limit', 'airtime_sta_weight', 'bss_load_update_period', 'chan_util_avg_period',
 		'disassoc_low_ack', 'skip_inactivity_poll', 'ignore_broadcast_ssid', 'uapsd_advertisement_enabled',
 		'utf8_ssid', 'multi_ap', 'multi_ap_vlanid', 'multi_ap_profile', 'tdls_prohibit', 'bridge',
@@ -61,6 +61,13 @@ function iface_setup(config) {
 		'bss_transition', 'wnm_sleep_mode', 'wnm_sleep_mode_no_keys', 'qos_map_set', 'max_listen_int',
 		'dtim_period', 'wmm_enabled', 'start_disabled', 'na_mcast_to_ucast', 'no_probe_resp_if_max_sta',
 	]);
+
+	if (config.ap_max_inactivity == 0){
+		/* hostapd treats 0 as immediate timeout, emulate "disabled" with a very high value */
+		append('ap_max_inactivity', 31536000);
+	} else if (config.ap_max_inactivity > 0) {
+		append_vars(config, [ 'ap_max_inactivity' ]);
+  }
 }
 
 function iface_authentication_server(config) {
@@ -201,7 +208,7 @@ function iface_auth_type(config) {
 }
 
 function iface_ppsk(config) {
-	if (!(config.auth_type in [ 'none', 'owe', 'psk', 'sae', 'psk-sae', 'wep' ]) || !config.auth_server_addr)
+	if (!(config.auth_type in [ 'none', 'owe', 'psk', 'sae', 'psk-sae', 'wep' ]) || !config.auth_server_addr || config.macfilter == 'radius')
 		return;
 
 	iface_authentication_server(config);
@@ -270,6 +277,12 @@ function iface_macfilter(config) {
 	case 'deny':
 		append('deny_mac_file', path);
 		append('macaddr_acl', 0);
+		break;
+
+	case 'radius':
+		append('macaddr_acl', 2);
+		config.vlan_possible = 1;
+		iface_authentication_server(config);
 		break;
 
 	default:

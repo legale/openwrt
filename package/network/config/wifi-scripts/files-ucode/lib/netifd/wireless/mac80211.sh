@@ -288,14 +288,39 @@ function setup() {
 		wdev_data[v.config.ifname] = config;
 	}
 
-	for (let ifname in active_ifnames) {
+	let wdev_config = {};
+	for (let _, ifname in active_ifnames) {
 		if (!wdev_data[ifname])
 			continue;
+		wdev_config[ifname] = wdev_data[ifname];
+	}
 
-		let if_config = {
-			[ifname]: wdev_data[ifname]
-		};
-		system(`ucode /usr/share/hostap/wdev.uc ${data.phy}${data.phy_suffix} set_config '${if_config}'`);
+	system(`ucode /usr/share/hostap/wdev.uc ${data.phy}${data.phy_suffix} set_config '${wdev_config}'`);
+	if (data.phy_suffix) {
+		/*
+		 * Some targets reject radio suffix/mask based requests (e.g. phy0:0)
+		 * but succeed with plain phy naming (phy0). Retry with plain phy to
+		 * keep Wi-Fi bring-up resilient.
+		 */
+		log(`wdev fallback: ensure config via '${data.phy}'`);
+		system(`ucode /usr/share/hostap/wdev.uc ${data.phy} set_config '${wdev_config}'`);
+	}
+
+	let any_wdev_created = false;
+	for (let ifname in wdev_config) {
+		if (fs.access(`/sys/class/net/${ifname}`)) {
+			any_wdev_created = true;
+			break;
+		}
+	}
+
+	if (length(wdev_config) > 0 && !any_wdev_created && data.phy_suffix) {
+		log(`wdev fallback: no interfaces created via '${data.phy}${data.phy_suffix}', switching to plain phy mode`);
+		data.phy_suffix = "";
+		data.vif_phy_suffix = "";
+		data.config.radio = -1;
+
+		system(`ucode /usr/share/hostap/wdev.uc ${data.phy} set_config '${wdev_config}'`);
 	}
 
 	if (fs.access('/usr/sbin/wpa_supplicant', 'x'))
