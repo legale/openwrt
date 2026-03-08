@@ -3558,7 +3558,7 @@ define Device/yuncore_ax820
   IMAGE_SIZE := 15808k
   DEVICE_VENDOR := YunCore
   DEVICE_MODEL := AX820
-  SUPPORTED_DEVICES += fplus,wf-ap-622l-iic
+  SUPPORTED_DEVICES += rfnet,rf-ax-622i yuncore,ax820 fplus,wf-ap-622l-iic
   DEVICE_PACKAGES := kmod-mt7915-firmware -uboot-envtools
 endef
 TARGET_DEVICES += yuncore_ax820
@@ -3568,10 +3568,20 @@ define Device/fplus_wf-ap-622l-iic
   IMAGE_SIZE := 15808k
   DEVICE_VENDOR := fplus
   DEVICE_MODEL := wf-ap-622l-iic
-  SUPPORTED_DEVICES += yuncore,ax820
+  SUPPORTED_DEVICES += rfnet,rf-ax-622i yuncore,ax820 fplus,wf-ap-622l-iic
   DEVICE_PACKAGES := kmod-mt7915-firmware -uboot-envtools kmod-gpio-leds kmod-gpio-button-hotplug 
 endef
 TARGET_DEVICES += fplus_wf-ap-622l-iic
+
+define Device/rfnet_rf-ax-622i
+  $(Device/dsa-migration)
+  IMAGE_SIZE := 15808k
+  DEVICE_VENDOR := RFNet
+  DEVICE_MODEL := RF-AX-622i
+  SUPPORTED_DEVICES += rfnet,rf-ax-622i yuncore,ax820 fplus,wf-ap-622l-iic
+  DEVICE_PACKAGES := kmod-mt7915-firmware -uboot-envtools kmod-gpio-leds kmod-gpio-button-hotplug 
+endef
+TARGET_DEVICES += rfnet_rf-ax-622i
 
 define Device/yuncore_fap640
   $(Device/dsa-migration)
