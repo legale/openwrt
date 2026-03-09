@@ -16,11 +16,30 @@ include $(INCLUDE_DIR)/download.mk
 include $(INCLUDE_DIR)/quilt.mk
 include $(INCLUDE_DIR)/kernel-defaults.mk
 
+KERNEL_MAKE = $(MAKE) PATH="$(TARGET_PATH)" $(KERNEL_MAKEOPTS)
+
 define Kernel/Prepare
 	$(call Kernel/Prepare/Default)
 endef
 
+define Kernel/FWVersionTimestampInject
+	$(INSTALL_DIR) "$(LINUX_DIR)/include/generated" "$(LINUX_DIR)/init"
+	[ ! -f "$(FW_BUILD_INFO_HEADER)" ] || { \
+		$(CP) "$(FW_BUILD_INFO_HEADER)" "$(LINUX_DIR)/include/generated/fw_build_info.h"; \
+		touch "$(LINUX_DIR)/include/generated/fw_build_info.h"; \
+	}
+	[ ! -f "$(FW_VERSION_TIMESTAMP_TEMPLATE_SRC)" ] || { \
+		$(CP) "$(FW_VERSION_TIMESTAMP_TEMPLATE_SRC)" "$(LINUX_DIR)/init/version-timestamp.c"; \
+		touch "$(LINUX_DIR)/init/version-timestamp.c"; \
+	}
+	[ ! -f "$(FW_VERSION_C_TEMPLATE_SRC)" ] || { \
+		$(CP) "$(FW_VERSION_C_TEMPLATE_SRC)" "$(LINUX_DIR)/init/version.c"; \
+		touch "$(LINUX_DIR)/init/version.c"; \
+	}
+endef
+
 define Kernel/Configure
+	$(call Kernel/FWVersionTimestampInject)
 	$(call Kernel/Configure/Default)
 endef
 

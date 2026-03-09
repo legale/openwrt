@@ -20,6 +20,10 @@ export ORIG_PATH:=$(if $(ORIG_PATH),$(ORIG_PATH),$(PATH))
 export PATH:=$(if $(STAGING_DIR),$(abspath $(STAGING_DIR)/../host/bin),$(TOPDIR)/staging_dir/host/bin):$(PATH)
 
 ifneq ($(OPENWRT_BUILD),1)
+  # Reset fw-version once-stamp on each top-level make invocation.
+  # This keeps "once per build run" behavior without requiring manual cleanup.
+  $(shell rm -f $(TOPDIR)/tmp/.fw_version_initialized)
+
   _SINGLE=export MAKEFLAGS=$(space);
 
   override OPENWRT_BUILD=1
@@ -32,6 +36,7 @@ ifneq ($(OPENWRT_BUILD),1)
   include $(TOPDIR)/include/depends.mk
   include $(TOPDIR)/include/toplevel.mk
 else
+  include $(TOPDIR)/feeds/wda/wda/src/buildroot-tools/fw_version.mk
   include rules.mk
   include $(INCLUDE_DIR)/depends.mk
   include $(INCLUDE_DIR)/subdir.mk
