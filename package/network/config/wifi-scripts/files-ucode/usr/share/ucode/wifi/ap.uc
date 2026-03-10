@@ -62,12 +62,11 @@ function iface_setup(config) {
 		'dtim_period', 'wmm_enabled', 'start_disabled', 'na_mcast_to_ucast', 'no_probe_resp_if_max_sta',
 	]);
 
-	if (config.ap_max_inactivity == 0){
+	if (config.ap_max_inactivity == 0)
 		/* hostapd treats 0 as immediate timeout, emulate "disabled" with a very high value */
 		append('ap_max_inactivity', 31536000);
-	} else if (config.ap_max_inactivity > 0) {
+	else if (config.ap_max_inactivity > 0)
 		append_vars(config, [ 'ap_max_inactivity' ]);
-  }
 }
 
 function iface_authentication_server(config) {
@@ -76,7 +75,12 @@ function iface_authentication_server(config) {
 		append_vars(config, [ 'auth_server_port', 'auth_server_shared_secret' ]);
 	}
 
-	append_vars(config, [ 'radius_auth_req_attr' ]);
+	if (type(config.radius_auth_req_attr) == 'array') {
+		for (let attr in config.radius_auth_req_attr)
+			append('radius_auth_req_attr', attr);
+	} else {
+		append('radius_auth_req_attr', config.radius_auth_req_attr);
+	}
 }
 
 function iface_accounting_server(config) {
@@ -85,7 +89,12 @@ function iface_accounting_server(config) {
 		append_vars(config, [ 'acct_server_port', 'acct_server_shared_secret' ]);
 	}
 
-	append_vars(config, [ 'radius_acct_req_attr' ]);
+	if (type(config.radius_acct_req_attr) == 'array') {
+		for (let attr in config.radius_acct_req_attr)
+			append('radius_acct_req_attr', attr);
+	} else {
+		append('radius_acct_req_attr', config.radius_acct_req_attr);
+	}
 }
 
 function iface_auth_type(config) {
@@ -196,7 +205,7 @@ function iface_auth_type(config) {
 		'wpa_group_rekey', 'wpa_ptk_rekey', 'wpa_gmk_rekey', 'wpa_strict_rekey',
 		'macaddr_acl', 'wpa_psk_radius', 'wpa_psk', 'wpa_passphrase', 'wpa_psk_file',
 		'eapol_version', 'dynamic_vlan', 'radius_request_cui', 'eap_reauth_period',
-		'radius_das_client', 'radius_das_port', 'own_ip_addr', 'dynamic_own_ip_addr',
+		'radius_das_client', 'radius_das_port', 'own_ip_addr', 'dynamic_own_ip_addr', 'radius_client_addr',
 		'wpa_disable_eapol_key_retries', 'auth_algs', 'wpa', 'wpa_pairwise',
 		'erp_domain', 'fils_realm', 'erp_send_reauth_start', 'fils_cache_id'
 	]);
@@ -208,7 +217,7 @@ function iface_auth_type(config) {
 }
 
 function iface_ppsk(config) {
-	if (!(config.auth_type in [ 'none', 'owe', 'psk', 'sae', 'psk-sae', 'wep' ]) || !config.auth_server_addr || config.macfilter == 'radius')
+	if (!(config.auth_type in [ 'none', 'owe', 'psk', 'sae', 'psk-sae', 'wep' ]) || !config.auth_server_addr)
 		return;
 
 	iface_authentication_server(config);
@@ -277,12 +286,6 @@ function iface_macfilter(config) {
 	case 'deny':
 		append('deny_mac_file', path);
 		append('macaddr_acl', 0);
-		break;
-
-	case 'radius':
-		append('macaddr_acl', 2);
-		config.vlan_possible = 1;
-		iface_authentication_server(config);
 		break;
 
 	default:
