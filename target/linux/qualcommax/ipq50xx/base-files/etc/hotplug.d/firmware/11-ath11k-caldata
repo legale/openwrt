@@ -19,7 +19,8 @@ case "$FIRMWARE" in
 	ikuai,sw8v2|\
 	ikuai,sw8v3|\
 	fplus,wf-ap-624m-iic-v1|\
-	fplus,wf-ap-624m-iic-v3)
+	fplus,wf-ap-624m-iic-v3|\
+	wico,624m)
 		caldata_extract "0:ART" 0x1000 0x20000
 		ath11k_remove_regdomain
 		;;
@@ -132,7 +133,8 @@ case "$FIRMWARE" in
 	ikuai,sw8v2|\
 	ikuai,sw8v3|\
 	fplus,wf-ap-624m-iic-v1|\
-	fplus,wf-ap-624m-iic-v3)
+	fplus,wf-ap-624m-iic-v3|\
+	wico,624m)
 		caldata_extract "0:ART" 0x26800 0x20000
 		ath11k_remove_regdomain
 		;;

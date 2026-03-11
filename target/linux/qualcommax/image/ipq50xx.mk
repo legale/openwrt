@@ -165,7 +165,7 @@ define Device/fplus_wf-ap-624m-iic-v3
 	DEVICE_TITLE := Fplus wf-ap-624m-iic-v3
 	DEVICE_MODEL := WF-AP-624M-IIC-V3
 	DEVICE_DTS := ipq5018-wf-ap-624m-iic-v3
-	SUPPORTED_DEVICES := ikuai,sw8v3 fplus,wf-ap-624m-iic-v3
+	SUPPORTED_DEVICES := ikuai,sw8v3 fplus,wf-ap-624m-iic-v3 wico,624m
 	DEVICE_DTS_CONFIG := config@mp03.1
 	IMAGES := sysupgrade.bin factory.bin factory.ubi
 	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
@@ -176,6 +176,28 @@ define Device/fplus_wf-ap-624m-iic-v3
 		ipq-wifi-fplus_wf-ap-624m-iic-v3
 endef
 TARGET_DEVICES += fplus_wf-ap-624m-iic-v3
+
+define Device/wico_624m
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	SOC := ipq5018
+	DEVICE_VENDOR := Wico
+	DEVICE_TITLE := Wico 624M
+	DEVICE_MODEL := 624M
+	DEVICE_DTS := ipq5018-wico-624m
+	SUPPORTED_DEVICES := ikuai,sw8v3 wico,624m fplus,wf-ap-624m-iic-v3
+	DEVICE_DTS_CONFIG := config@mp03.1
+	IMAGES := sysupgrade.bin factory.bin factory.ubi
+	IMAGE/factory.bin := append-ubi | qsdk-ipq-factory-nand
+	IMAGE/factory.ubi := append-ubi
+	DEVICE_PACKAGES := ath11k-firmware-ipq5018-qcn6122 \
+		kmod-ath11k-pci \
+		ath11k-firmware-qcn9074 \
+		ipq-wifi-wico_624m
+endef
+TARGET_DEVICES += wico_624m
 
 define Device/linksys_mx2000
 	$(call Device/linksys_ipq50xx_mx_base)

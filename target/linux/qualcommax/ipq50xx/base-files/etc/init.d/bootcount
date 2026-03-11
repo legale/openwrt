@@ -12,7 +12,8 @@ boot() {
 		mtd resetbc s_env || true
 	;;
 	fplus,wf-ap-624m-iic-v1|\
-	fplus,wf-ap-624m-iic-v3)
+	fplus,wf-ap-624m-iic-v3|\
+	wico,624m)
 		fw_setenv owrt_bootcount 0
 	;;
 	esac
