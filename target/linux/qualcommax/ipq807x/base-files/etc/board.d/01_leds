@@ -67,7 +67,8 @@ qnap,301w)
 	ucidef_set_led_netdev "10G_1" "10G_1" "green:10g-1" "10g-1"
 	ucidef_set_led_netdev "10G_2" "10G_2" "green:10g-2" "10g-2"
 	;;
-yuncore,ax880)
+yuncore,ax880|\
+rfnet,rf-ax-644i)
 	ucidef_set_led_netdev "wan-port-link" "WAN-PORT-LINK" "90000.mdio-1:18:green:wan" "wan" "tx rx link_10 link_100 link_1000 link_2500"
 	ucidef_set_led_netdev "lan-port-link" "LAN-PORT-LINK" "90000.mdio-1:1c:green:lan" "lan" "tx rx link_10 link_100 link_1000 link_2500"
 	;;

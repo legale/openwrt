@@ -13,6 +13,7 @@ ipq807x_setup_interfaces()
 	case "$board" in
 	aliyun,ap8220|\
 	edgecore,eap102|\
+	rfnet,rf-ax-644i|\
 	tcl,linkhub-hh500v|\
 	tplink,deco-x80-5g|\
 	yuncore,ax880|\
@@ -48,6 +49,7 @@ ipq807x_setup_interfaces()
 		;;
 	edgecore,eap102|\
 	fplus,wf-ap-624h-iic|\
+	rfnet,rf-ax-644i|\
 	yuncore,ax880|\
 	zte,mf269)
 		ucidef_set_interfaces_lan_wan "lan" "wan"

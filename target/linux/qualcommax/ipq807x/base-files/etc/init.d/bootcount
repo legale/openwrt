@@ -32,6 +32,7 @@ boot() {
 		fw_setenv boot_count 0
 	;;
 	fplus,wf-ap-624h-iic|\
+	rfnet,rf-ax-644i|\
 	yuncore,ax880)
 		ax880_reset_bootcount;
 	;;

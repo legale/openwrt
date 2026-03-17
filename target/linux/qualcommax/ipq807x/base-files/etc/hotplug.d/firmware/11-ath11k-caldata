@@ -29,6 +29,7 @@ case "$FIRMWARE" in
 	edimax,cax1800|\
 	linksys,mx5300|\
 	fplus,wf-ap-624h-iic|\
+	rfnet,rf-ax-644i|\
 	netgear,rax120v2|\
 	netgear,wax218|\
 	qnap,301w|\

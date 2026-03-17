@@ -310,6 +310,7 @@ platform_do_upgrade() {
 		tplink_do_upgrade "$1"
 		;;
 	fplus,wf-ap-624h-iic|\
+	rfnet,rf-ax-644i|\
 	yuncore,ax880)
 		#create env vars if needed
 		ax880_env_setup
