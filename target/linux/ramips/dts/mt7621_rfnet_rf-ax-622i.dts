@@ -8,7 +8,7 @@
 
 / {
 	compatible = "rfnet,rf-ax-622i", "mediatek,mt7621-soc";
-	model = "RFNet RF-AX-622i";
+	model = "RFNet RF-AX-622I";
 
 	aliases {
 		led-boot = &led_system;
@@ -104,6 +104,7 @@
 			partition@30000 {
 				label = "Config";
 				reg = <0x30000 0x10000>;
+				read-only;
 			};
 
 			/* range 0x40000 to 0x50000 is empty in vendor
@@ -131,6 +132,12 @@
 					macaddr_factory_e000: macaddr@e000 {
 						compatible = "mac-base";
 						reg = <0xe000 0x6>;
+						#nvmem-cell-cells = <1>;
+					};
+
+					macaddr_factory_e006: macaddr@e006 {
+						compatible = "mac-base";
+						reg = <0xe006 0x6>;
 						#nvmem-cell-cells = <1>;
 					};
 				};
@@ -169,7 +176,7 @@
 	label = "wan";
 	phy-handle = <&ethphy0>;
 
-	nvmem-cells = <&macaddr_factory_e000 1>;
+	nvmem-cells = <&macaddr_factory_e006 0>;
 	nvmem-cell-names = "mac-address";
 };
 

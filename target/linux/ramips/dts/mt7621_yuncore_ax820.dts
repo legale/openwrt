@@ -134,6 +134,12 @@
 						reg = <0xe000 0x6>;
 						#nvmem-cell-cells = <1>;
 					};
+
+					macaddr_factory_e006: macaddr@e006 {
+						compatible = "mac-base";
+						reg = <0xe006 0x6>;
+						#nvmem-cell-cells = <1>;
+					};
 				};
 			};
 
@@ -170,7 +176,7 @@
 	label = "wan";
 	phy-handle = <&ethphy0>;
 
-	nvmem-cells = <&macaddr_factory_e000 1>;
+	nvmem-cells = <&macaddr_factory_e006 0>;
 	nvmem-cell-names = "mac-address";
 };
 
