@@ -199,6 +199,16 @@
 			partition@610000 {
 				label = "0:art";
 				reg = <0x5d0000 0x40000>;
+
+				nvmem-layout {
+					compatible = "fixed-layout";
+					#address-cells = <1>;
+					#size-cells = <1>;
+
+					device_serial: device-serial@21000 {
+						reg = <0x21000 0x40>; /* 0x40 64 bytes */
+					};
+				};
 			};
 
 			partition@650000 {
