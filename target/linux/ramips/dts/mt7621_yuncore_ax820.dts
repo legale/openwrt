@@ -104,7 +104,6 @@
 			partition@30000 {
 				label = "Config";
 				reg = <0x30000 0x10000>;
-				read-only;
 			};
 
 			/* range 0x40000 to 0x50000 is empty in vendor
@@ -129,13 +128,17 @@
 						reg = <0xe10 0x19c10>;
 					};
 
-					macaddr_factory_e000: macaddr@e000 {
+					device_serial: device-serial@21000 {
+						reg = <0x21000 0x40>;
+					};
+
+					mac_lan: macaddr@e000 {
 						compatible = "mac-base";
 						reg = <0xe000 0x6>;
 						#nvmem-cell-cells = <1>;
 					};
 
-					macaddr_factory_e006: macaddr@e006 {
+					mac_wan: macaddr@e006 {
 						compatible = "mac-base";
 						reg = <0xe006 0x6>;
 						#nvmem-cell-cells = <1>;
@@ -167,7 +170,7 @@
 };
 
 &gmac0 {
-	nvmem-cells = <&macaddr_factory_e000 0>;
+	nvmem-cells = <&mac_lan 0>;
 	nvmem-cell-names = "mac-address";
 };
 
@@ -176,7 +179,7 @@
 	label = "wan";
 	phy-handle = <&ethphy0>;
 
-	nvmem-cells = <&macaddr_factory_e006 0>;
+	nvmem-cells = <&mac_wan 0>;
 	nvmem-cell-names = "mac-address";
 };
 
