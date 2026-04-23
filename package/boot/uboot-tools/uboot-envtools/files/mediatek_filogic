@@ -145,6 +145,14 @@ smartrg,sdg-8734)
 teltonika,rutc50)
 	ubootenv_add_mtd "u-boot-env" "0x0" "0x10000" "0x10000"
 	;;
+	yuncore,ax835-32mb|\
+	yuncore,ax835)
+		ubootenv_add_mtd "u-boot-env" "0x0" "0x10000" "0x10000"
+		;;
+	yuncore,fap830-32mb|\
+	yuncore,fap830)
+		ubootenv_add_mtd "u-boot-env" "0x0" "0x10000" "0x10000"
+		;;
 tplink,archer-ax80-v1|\
 tplink,archer-ax80-v1-eu|\
 tplink,be450)

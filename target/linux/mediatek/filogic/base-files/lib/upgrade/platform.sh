@@ -219,7 +219,10 @@ platform_do_upgrade() {
 	totolink,x6000r|\
 	wavlink,wl-wn573hx3|\
 	widelantech,wap430x|\
-	yuncore,ax835)
+	yuncore,ax835-32mb|\
+	yuncore,ax835|\
+	yuncore,fap830-32mb|\
+	yuncore,fap830)
 		default_do_upgrade "$1"
 		;;
 	dlink,aquila-pro-ai-e30-a1|\

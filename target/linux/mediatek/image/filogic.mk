@@ -21,8 +21,16 @@ define Build/mt7981-bl2
 	cat $(STAGING_DIR_IMAGE)/mt7981-$1-bl2.img >> $@
 endef
 
+define Build/mt7981-ram-bl2
+	cat $(STAGING_DIR_IMAGE)/mt7981-ram-$1-bl2.bin >> $@
+endef
+
 define Build/mt7981-bl31-uboot
 	cat $(STAGING_DIR_IMAGE)/mt7981_$1-u-boot.fip >> $@
+endef
+
+define Build/mt7981-uboot-lzma
+	cat $(STAGING_DIR_IMAGE)/mt7981_$1-u-boot-lzma.img >> $@
 endef
 
 define Build/mt7986-bl2
@@ -3407,20 +3415,94 @@ TARGET_DEVICES += xiaomi_redmi-router-ax6000-ubootmod
 define Device/yuncore_ax835
   DEVICE_VENDOR := YunCore
   DEVICE_MODEL := AX835
+  DEVICE_IMG_PREFIX := yuncore_ax835
   DEVICE_DTS := mt7981b-yuncore-ax835
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS_LOADADDR := 0x47000000
-  IMAGES := sysupgrade.bin
-  IMAGE_SIZE := 14336k
+  IMAGE_SIZE := 15424k
   SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
   KERNEL := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
   KERNEL_INITRAMFS := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_ax835-nor
+  ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_ax835-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
   IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
 endef
 TARGET_DEVICES += yuncore_ax835
+
+define Device/yuncore_ax835-32mb
+  DEVICE_VENDOR := YunCore
+  DEVICE_MODEL := AX835 32mb
+  DEVICE_IMG_PREFIX := yuncore_ax835-32mb
+  DEVICE_DTS := mt7981b-yuncore-ax835-32mb
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_DTS_LOADADDR := 0x47000000
+  IMAGE_SIZE := 31808k
+  SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
+  KERNEL := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_ax835_32mb-nor
+  ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_ax835_32mb-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
+endef
+TARGET_DEVICES += yuncore_ax835-32mb
+
+define Device/yuncore_fap830
+  DEVICE_VENDOR := YunCore
+  DEVICE_MODEL := FAP830
+  DEVICE_IMG_PREFIX := yuncore_fap830
+  DEVICE_DTS := mt7981b-yuncore-fap830
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_DTS_LOADADDR := 0x47000000
+  IMAGE_SIZE := 15424k
+  SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
+  KERNEL := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_fap830-nor
+  ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_fap830-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
+endef
+TARGET_DEVICES += yuncore_fap830
+
+define Device/yuncore_fap830-32mb
+  DEVICE_VENDOR := YunCore
+  DEVICE_MODEL := FAP830-32mb
+  DEVICE_IMG_PREFIX := yuncore_fap830-32mb
+  DEVICE_DTS := mt7981b-yuncore-fap830-32mb
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_DTS_LOADADDR := 0x47000000
+  IMAGE_SIZE := 31808k
+  SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
+  KERNEL := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor
+  ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
+endef
+TARGET_DEVICES += yuncore_fap830-32mb
 
 define Device/zbtlink_zbt-z8102ax
   DEVICE_VENDOR := Zbtlink
