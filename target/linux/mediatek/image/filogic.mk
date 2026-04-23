@@ -3394,6 +3394,52 @@ define Device/yuncore_ax835-32mb
 endef
 TARGET_DEVICES += yuncore_ax835-32mb
 
+define Device/yuncore_fap830
+  DEVICE_VENDOR := YunCore
+  DEVICE_MODEL := FAP830
+  DEVICE_IMG_PREFIX := yuncore_fap830
+  DEVICE_DTS := mt7981b-yuncore-fap830
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_DTS_LOADADDR := 0x47000000
+  IMAGE_SIZE := 14848k
+  SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
+  KERNEL := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_fap830-nor
+  ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_fap830-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
+endef
+TARGET_DEVICES += yuncore_fap830
+
+define Device/yuncore_fap830-32mb
+  DEVICE_VENDOR := YunCore
+  DEVICE_MODEL := FAP830-32mb
+  DEVICE_IMG_PREFIX := yuncore_fap830-32mb
+  DEVICE_DTS := mt7981b-yuncore-fap830-32mb
+  DEVICE_DTS_DIR := ../dts
+  DEVICE_DTS_LOADADDR := 0x47000000
+  IMAGE_SIZE := 31232k
+  SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
+  KERNEL := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
+  KERNEL_INITRAMFS := kernel-bin | lzma | \
+	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
+  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor
+  ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
+  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
+endef
+TARGET_DEVICES += yuncore_fap830-32mb
+
 define Device/zbtlink_zbt-z8102ax
   DEVICE_VENDOR := Zbtlink
   DEVICE_MODEL := ZBT-Z8102AX
