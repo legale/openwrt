@@ -3355,7 +3355,7 @@ define Device/yuncore_ax835
   DEVICE_DTS := mt7981b-yuncore-ax835
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS_LOADADDR := 0x47000000
-  IMAGE_SIZE := 14848k
+  IMAGE_SIZE := 15424k
   SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
   KERNEL := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
@@ -3378,7 +3378,7 @@ define Device/yuncore_ax835-32mb
   DEVICE_DTS := mt7981b-yuncore-ax835-32mb
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS_LOADADDR := 0x47000000
-  IMAGE_SIZE := 31232k
+  IMAGE_SIZE := 31808k
   SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
   KERNEL := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
@@ -3401,7 +3401,7 @@ define Device/yuncore_fap830
   DEVICE_DTS := mt7981b-yuncore-fap830
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS_LOADADDR := 0x47000000
-  IMAGE_SIZE := 14848k
+  IMAGE_SIZE := 15424k
   SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
   KERNEL := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
@@ -3424,7 +3424,7 @@ define Device/yuncore_fap830-32mb
   DEVICE_DTS := mt7981b-yuncore-fap830-32mb
   DEVICE_DTS_DIR := ../dts
   DEVICE_DTS_LOADADDR := 0x47000000
-  IMAGE_SIZE := 31232k
+  IMAGE_SIZE := 31808k
   SUPPORTED_DEVICES += mediatek,mt7981-spim-nor-rfb
   KERNEL := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb

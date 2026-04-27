@@ -158,7 +158,7 @@
 
 			factory: partition@50000 {
 				label = "Factory";
-				reg = <0x50000 0xb0000>;
+				reg = <0x50000 0x20000>;
 				read-only;
 
 				nvmem-layout {
@@ -176,16 +176,16 @@
 				};
 			};
 
-			partition@100000 {
+			partition@70000 {
 				label = "FIP";
-				reg = <0x100000 0x80000>;
+				reg = <0x70000 0x80000>;
 				read-only;
 			};
 
-			partition@180000 {
+			partition@f0000 {
 				compatible = "denx,fit";
 				label = "firmware";
-				reg = <0x180000 0xe80000>;
+				reg = <0xf0000 0xf10000>;
 			};
 		};
 	};
