@@ -7,7 +7,7 @@ config WPA_RFKILL_SUPPORT
 config WPA_MSG_MIN_PRIORITY
 	int "Minimum debug message priority"
 	depends on PACKAGE_hostapd-common
-	default 3
+	default 2
 	help
 	  Useful values are:
 	    0 = all messages
