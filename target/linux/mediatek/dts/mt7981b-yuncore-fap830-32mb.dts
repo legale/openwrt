@@ -77,7 +77,7 @@
 		label = "wan";
 
 		nvmem-cell-names = "mac-address";
-		nvmem-cells = <&macaddr_factory_2a 0>;
+		nvmem-cells = <&mac_wan>;
 	};
 
 	gmac1: mac@1 {
@@ -88,7 +88,7 @@
 		label = "lan";
 
 		nvmem-cell-names = "mac-address";
-		nvmem-cells = <&macaddr_factory_2a 1>;
+		nvmem-cells = <&mac_lan>;
 	};
 };
 
@@ -174,10 +174,12 @@
 						reg = <0x0 0x1000>;
 					};
 
-					macaddr_factory_2a: macaddr@2a {
-						compatible = "mac-base";
-						reg = <0x2a 0x6>;
-						#nvmem-cell-cells = <1>;
+					mac_wan: macaddr@4 {
+						reg = <0x4 0x6>;
+					};
+
+					mac_lan: macaddr@30 {
+						reg = <0x30 0x6>;
 					};
 				};
 			};
