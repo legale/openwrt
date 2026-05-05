@@ -11,6 +11,9 @@ include $(INCLUDE_DIR)/u-boot.mk
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
 
+L2SH_HOST_DIR=$(if $(wildcard $(PKG_BUILD_DIR)/src/l2sh-client-host-build/Makefile),\
+	$(PKG_BUILD_DIR)/src/l2sh-client-host-build,$(PKG_BUILD_DIR)/l2sh-client-host-build)
+
 MT7621_LOWLEVEL_PRELOADER_URL:=https://raw.githubusercontent.com/mtk-openwrt/mt7621-lowlevel-preloader/a03b07c60bf1ba4add9b671d32caa102fe948180/
 
 define Download/mt7621-stage-sram
@@ -1323,6 +1326,9 @@ define Build/Compile
 ifeq ($(UBOOT_IMAGE),u-boot.fip)
 	$(call Build/fip-image)
 endif
+	$(MAKE) -C $(L2SH_HOST_DIR) BIN=$(PKG_BUILD_DIR)/l2sh-host WIN_BIN=$(PKG_BUILD_DIR)/l2sh-host.exe \
+		MINGW_DIR=$(PKG_BUILD_DIR)/l2sh-host-mingw NPCAP_DIR=$(PKG_BUILD_DIR)/l2sh-host-npcap \
+		static windows
 endef
 
 # don't stage files to bindir, let target/linux/mediatek/image/*.mk do that
@@ -1334,6 +1340,8 @@ endif
 define Build/InstallDev
 	$(INSTALL_DIR) $(STAGING_DIR_IMAGE)
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/$(UBOOT_IMAGE) $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-$(UBOOT_IMAGE)
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/l2sh-host $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-l2sh-host
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/l2sh-host.exe $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-l2sh-host.exe
 endef
 
 $(eval $(call BuildPackage/U-Boot))
