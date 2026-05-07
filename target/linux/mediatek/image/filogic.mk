@@ -3425,11 +3425,32 @@ define Device/yuncore_ax835
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
   KERNEL_INITRAMFS := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
-  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACTS += preloader.bin preloader-1300.bin preloader-1600.bin preloader-1866.bin preloader-2133.bin
+  ARTIFACTS += bl31-uboot.fip bl31-uboot-1300.fip bl31-uboot-1600.fip
+  ARTIFACTS += bl31-uboot-1866.fip bl31-uboot-2133.fip
+  ARTIFACTS += uboot-lzma.img uboot-lzma-1300.img uboot-lzma-1600.img
+  ARTIFACTS += uboot-lzma-1866.img uboot-lzma-2133.img uartboot-bl2.bin
+  ARTIFACTS += uartboot-bl2-1300.bin uartboot-bl2-1600.bin uartboot-bl2-1866.bin uartboot-bl2-2133.bin
   ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/preloader-1300.bin := mt7981-bl2 nor-ddr3-1300
+  ARTIFACT/preloader-1600.bin := mt7981-bl2 nor-ddr3-1600
+  ARTIFACT/preloader-1866.bin := mt7981-bl2 nor-ddr3-1866
+  ARTIFACT/preloader-2133.bin := mt7981-bl2 nor-ddr3-2133
   ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_ax835-nor
+  ARTIFACT/bl31-uboot-1300.fip := mt7981-bl31-uboot yuncore_ax835-nor-1300
+  ARTIFACT/bl31-uboot-1600.fip := mt7981-bl31-uboot yuncore_ax835-nor-1600
+  ARTIFACT/bl31-uboot-1866.fip := mt7981-bl31-uboot yuncore_ax835-nor-1866
+  ARTIFACT/bl31-uboot-2133.fip := mt7981-bl31-uboot yuncore_ax835-nor-2133
   ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_ax835-nor
+  ARTIFACT/uboot-lzma-1300.img := mt7981-uboot-lzma yuncore_ax835-nor-1300
+  ARTIFACT/uboot-lzma-1600.img := mt7981-uboot-lzma yuncore_ax835-nor-1600
+  ARTIFACT/uboot-lzma-1866.img := mt7981-uboot-lzma yuncore_ax835-nor-1866
+  ARTIFACT/uboot-lzma-2133.img := mt7981-uboot-lzma yuncore_ax835-nor-2133
   ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  ARTIFACT/uartboot-bl2-1300.bin := mt7981-ram-bl2 ddr3-1300
+  ARTIFACT/uartboot-bl2-1600.bin := mt7981-ram-bl2 ddr3-1600
+  ARTIFACT/uartboot-bl2-1866.bin := mt7981-ram-bl2 ddr3-1866
+  ARTIFACT/uartboot-bl2-2133.bin := mt7981-ram-bl2 ddr3-2133
   IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
 endef
@@ -3448,11 +3469,32 @@ define Device/yuncore_ax835-32mb
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
   KERNEL_INITRAMFS := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
-  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACTS += preloader.bin preloader-1300.bin preloader-1600.bin preloader-1866.bin preloader-2133.bin
+  ARTIFACTS += bl31-uboot.fip bl31-uboot-1300.fip bl31-uboot-1600.fip
+  ARTIFACTS += bl31-uboot-1866.fip bl31-uboot-2133.fip
+  ARTIFACTS += uboot-lzma.img uboot-lzma-1300.img uboot-lzma-1600.img
+  ARTIFACTS += uboot-lzma-1866.img uboot-lzma-2133.img uartboot-bl2.bin
+  ARTIFACTS += uartboot-bl2-1300.bin uartboot-bl2-1600.bin uartboot-bl2-1866.bin uartboot-bl2-2133.bin
   ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/preloader-1300.bin := mt7981-bl2 nor-ddr3-1300
+  ARTIFACT/preloader-1600.bin := mt7981-bl2 nor-ddr3-1600
+  ARTIFACT/preloader-1866.bin := mt7981-bl2 nor-ddr3-1866
+  ARTIFACT/preloader-2133.bin := mt7981-bl2 nor-ddr3-2133
   ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_ax835_32mb-nor
+  ARTIFACT/bl31-uboot-1300.fip := mt7981-bl31-uboot yuncore_ax835_32mb-nor-1300
+  ARTIFACT/bl31-uboot-1600.fip := mt7981-bl31-uboot yuncore_ax835_32mb-nor-1600
+  ARTIFACT/bl31-uboot-1866.fip := mt7981-bl31-uboot yuncore_ax835_32mb-nor-1866
+  ARTIFACT/bl31-uboot-2133.fip := mt7981-bl31-uboot yuncore_ax835_32mb-nor-2133
   ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_ax835_32mb-nor
+  ARTIFACT/uboot-lzma-1300.img := mt7981-uboot-lzma yuncore_ax835_32mb-nor-1300
+  ARTIFACT/uboot-lzma-1600.img := mt7981-uboot-lzma yuncore_ax835_32mb-nor-1600
+  ARTIFACT/uboot-lzma-1866.img := mt7981-uboot-lzma yuncore_ax835_32mb-nor-1866
+  ARTIFACT/uboot-lzma-2133.img := mt7981-uboot-lzma yuncore_ax835_32mb-nor-2133
   ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  ARTIFACT/uartboot-bl2-1300.bin := mt7981-ram-bl2 ddr3-1300
+  ARTIFACT/uartboot-bl2-1600.bin := mt7981-ram-bl2 ddr3-1600
+  ARTIFACT/uartboot-bl2-1866.bin := mt7981-ram-bl2 ddr3-1866
+  ARTIFACT/uartboot-bl2-2133.bin := mt7981-ram-bl2 ddr3-2133
   IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
 endef
@@ -3471,11 +3513,32 @@ define Device/yuncore_fap830
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
   KERNEL_INITRAMFS := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
-  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACTS += preloader.bin preloader-1300.bin preloader-1600.bin preloader-1866.bin preloader-2133.bin
+  ARTIFACTS += bl31-uboot.fip bl31-uboot-1300.fip bl31-uboot-1600.fip
+  ARTIFACTS += bl31-uboot-1866.fip bl31-uboot-2133.fip
+  ARTIFACTS += uboot-lzma.img uboot-lzma-1300.img uboot-lzma-1600.img
+  ARTIFACTS += uboot-lzma-1866.img uboot-lzma-2133.img uartboot-bl2.bin
+  ARTIFACTS += uartboot-bl2-1300.bin uartboot-bl2-1600.bin uartboot-bl2-1866.bin uartboot-bl2-2133.bin
   ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/preloader-1300.bin := mt7981-bl2 nor-ddr3-1300
+  ARTIFACT/preloader-1600.bin := mt7981-bl2 nor-ddr3-1600
+  ARTIFACT/preloader-1866.bin := mt7981-bl2 nor-ddr3-1866
+  ARTIFACT/preloader-2133.bin := mt7981-bl2 nor-ddr3-2133
   ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_fap830-nor
+  ARTIFACT/bl31-uboot-1300.fip := mt7981-bl31-uboot yuncore_fap830-nor-1300
+  ARTIFACT/bl31-uboot-1600.fip := mt7981-bl31-uboot yuncore_fap830-nor-1600
+  ARTIFACT/bl31-uboot-1866.fip := mt7981-bl31-uboot yuncore_fap830-nor-1866
+  ARTIFACT/bl31-uboot-2133.fip := mt7981-bl31-uboot yuncore_fap830-nor-2133
   ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_fap830-nor
+  ARTIFACT/uboot-lzma-1300.img := mt7981-uboot-lzma yuncore_fap830-nor-1300
+  ARTIFACT/uboot-lzma-1600.img := mt7981-uboot-lzma yuncore_fap830-nor-1600
+  ARTIFACT/uboot-lzma-1866.img := mt7981-uboot-lzma yuncore_fap830-nor-1866
+  ARTIFACT/uboot-lzma-2133.img := mt7981-uboot-lzma yuncore_fap830-nor-2133
   ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  ARTIFACT/uartboot-bl2-1300.bin := mt7981-ram-bl2 ddr3-1300
+  ARTIFACT/uartboot-bl2-1600.bin := mt7981-ram-bl2 ddr3-1600
+  ARTIFACT/uartboot-bl2-1866.bin := mt7981-ram-bl2 ddr3-1866
+  ARTIFACT/uartboot-bl2-2133.bin := mt7981-ram-bl2 ddr3-2133
   IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
 endef
@@ -3494,11 +3557,32 @@ define Device/yuncore_fap830-32mb
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb
   KERNEL_INITRAMFS := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
-  ARTIFACTS += preloader.bin bl31-uboot.fip uboot-lzma.img uartboot-bl2.bin
+  ARTIFACTS += preloader.bin preloader-1300.bin preloader-1600.bin preloader-1866.bin preloader-2133.bin
+  ARTIFACTS += bl31-uboot.fip bl31-uboot-1300.fip bl31-uboot-1600.fip
+  ARTIFACTS += bl31-uboot-1866.fip bl31-uboot-2133.fip
+  ARTIFACTS += uboot-lzma.img uboot-lzma-1300.img uboot-lzma-1600.img
+  ARTIFACTS += uboot-lzma-1866.img uboot-lzma-2133.img uartboot-bl2.bin
+  ARTIFACTS += uartboot-bl2-1300.bin uartboot-bl2-1600.bin uartboot-bl2-1866.bin uartboot-bl2-2133.bin
   ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/preloader-1300.bin := mt7981-bl2 nor-ddr3-1300
+  ARTIFACT/preloader-1600.bin := mt7981-bl2 nor-ddr3-1600
+  ARTIFACT/preloader-1866.bin := mt7981-bl2 nor-ddr3-1866
+  ARTIFACT/preloader-2133.bin := mt7981-bl2 nor-ddr3-2133
   ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor
+  ARTIFACT/bl31-uboot-1300.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor-1300
+  ARTIFACT/bl31-uboot-1600.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor-1600
+  ARTIFACT/bl31-uboot-1866.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor-1866
+  ARTIFACT/bl31-uboot-2133.fip := mt7981-bl31-uboot yuncore_fap830-32mb-nor-2133
   ARTIFACT/uboot-lzma.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor
+  ARTIFACT/uboot-lzma-1300.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor-1300
+  ARTIFACT/uboot-lzma-1600.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor-1600
+  ARTIFACT/uboot-lzma-1866.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor-1866
+  ARTIFACT/uboot-lzma-2133.img := mt7981-uboot-lzma yuncore_fap830-32mb-nor-2133
   ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
+  ARTIFACT/uartboot-bl2-1300.bin := mt7981-ram-bl2 ddr3-1300
+  ARTIFACT/uartboot-bl2-1600.bin := mt7981-ram-bl2 ddr3-1600
+  ARTIFACT/uartboot-bl2-1866.bin := mt7981-ram-bl2 ddr3-1866
+  ARTIFACT/uartboot-bl2-2133.bin := mt7981-ram-bl2 ddr3-2133
   IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
 endef
