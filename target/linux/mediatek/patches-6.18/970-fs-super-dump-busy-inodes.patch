@@ -15,7 +15,7 @@ Signed-off-by: Ruslan <ruslan@local>
 
 --- a/fs/super.c
 +++ b/fs/super.c
-@@ -612,6 +612,21 @@ void retire_super(struct super_block *sb
+@@ -598,6 +598,21 @@ void retire_super(struct super_block *sb
  }
  EXPORT_SYMBOL(retire_super);
  

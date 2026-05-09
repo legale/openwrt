@@ -70,9 +70,32 @@ debug_overlay_holders() {
 	[ -n "$found" ] || v "overlay move debug: no user-visible holders found"
 }
 
+umount_old_root_children() {
+	local list="/tmp/old-root.mounts.$$"
+	local line mp ret=0
+
+	awk '$5 ~ "^/mnt/.+" { print length($5), $5 }' /proc/self/mountinfo | \
+		sort -rn > "$list"
+
+	while IFS= read -r line; do
+		mp="${line#* }"
+		[ -n "$mp" ] || continue
+
+		v "Unmounting old root child $mp."
+		/bin/umount "$mp" || {
+			v "Failed to unmount old root child $mp."
+			ret=1
+		}
+	done < "$list"
+
+	rm -f "$list"
+	return $ret
+}
+
 ramfs_stage2() {
 	RAMFS_COPY_LOSETUP="$(command -v /usr/sbin/losetup)"
 	RAMFS_COPY_LVM="$(command -v lvm)"
+	local try umounted=
 
 	v "overlay teardown debug before remount/umount of old root"
 	debug_overlay_holders
@@ -82,7 +105,24 @@ ramfs_stage2() {
 		debug_overlay_holders
 	}
 
-	/bin/umount /mnt || {
+	sync
+	umount_old_root_children || debug_overlay_holders
+
+	for try in 1 2 3; do
+		/bin/umount /mnt && {
+			umounted=1
+			break
+		}
+
+		[ "$try" -lt 3 ] || break
+
+		v "Retrying old root child umounts and root umount ($try/3)."
+		umount_old_root_children || debug_overlay_holders
+		sleep 1
+		sync
+	done
+
+	[ -n "$umounted" ] || {
 		v "Failed to unmount old root, falling back to lazy umount."
 		debug_overlay_holders
 

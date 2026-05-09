@@ -1,0 +1,295 @@
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -28,6 +28,9 @@
+ #include <linux/proc_fs.h>
+ #include <linux/task_work.h>
+ #include <linux/sched/task.h>
++#include <linux/sched/signal.h>
++#include <linux/fdtable.h>
++#include <linux/mm.h>
+ #include <uapi/linux/mount.h>
+ #include <linux/fs_context.h>
+ #include <linux/shmem_fs.h>
+@@ -1862,6 +1865,273 @@ static int do_umount_root(struct super_b
+ 	return ret;
+ }
+ 
++static struct files_struct *get_task_files_ref(struct task_struct *task)
++{
++	struct files_struct *files = NULL;
++
++	task_lock(task);
++	if (task->files) {
++		files = task->files;
++		atomic_inc(&files->count);
++	}
++	task_unlock(task);
++
++	return files;
++}
++
++static bool get_task_root_path(struct task_struct *task, struct path *path)
++{
++	bool ok = false;
++
++	task_lock(task);
++	if (task->fs) {
++		get_fs_root(task->fs, path);
++		ok = true;
++	}
++	task_unlock(task);
++
++	return ok;
++}
++
++static bool get_task_pwd_path(struct task_struct *task, struct path *path)
++{
++	bool ok = false;
++
++	task_lock(task);
++	if (task->fs) {
++		get_fs_pwd(task->fs, path);
++		ok = true;
++	}
++	task_unlock(task);
++
++	return ok;
++}
++
++static const char *path_in_mount(const struct path *path, char *buf)
++{
++	char *name;
++
++	if (!buf)
++		return "<no-path-buffer>";
++
++	name = dentry_path_raw(path->dentry, buf, PAGE_SIZE);
++	if (IS_ERR(name))
++		return "<path-error>";
++
++	return name;
++}
++
++struct busy_umount_fd_ctx {
++	struct mount *mnt;
++	struct task_struct *task;
++	char *buf;
++	bool *found;
++};
++
++static int dump_busy_umount_fd(const void *data, struct file *file, unsigned int fd)
++{
++	const struct busy_umount_fd_ctx *ctx = data;
++
++	if (file->f_path.mnt != &ctx->mnt->mnt)
++		return 0;
++
++	*ctx->found = true;
++	pr_warn("VFS: busy umount mnt_id=%d task=%s[%d] fd=%u path=%s ino=%lu flags=0x%x\n",
++		ctx->mnt->mnt_id, ctx->task->comm, task_pid_nr(ctx->task), fd,
++		path_in_mount(&file->f_path, ctx->buf), file_inode(file)->i_ino,
++		file->f_flags);
++
++	return 0;
++}
++
++static bool dump_busy_umount_task(struct mount *mnt, struct task_struct *task, char *buf)
++{
++	struct files_struct *files;
++	struct path path;
++	struct file *exe;
++	struct busy_umount_fd_ctx ctx = {
++		.mnt = mnt,
++		.task = task,
++		.buf = buf,
++	};
++	bool found = false;
++
++	if (get_task_root_path(task, &path)) {
++		if (path.mnt == &mnt->mnt) {
++			found = true;
++			pr_warn("VFS: busy umount mnt_id=%d task=%s[%d] root=%s\n",
++				mnt->mnt_id, task->comm, task_pid_nr(task),
++				path_in_mount(&path, buf));
++		}
++		path_put(&path);
++	}
++
++	if (get_task_pwd_path(task, &path)) {
++		if (path.mnt == &mnt->mnt) {
++			found = true;
++			pr_warn("VFS: busy umount mnt_id=%d task=%s[%d] cwd=%s\n",
++				mnt->mnt_id, task->comm, task_pid_nr(task),
++				path_in_mount(&path, buf));
++		}
++		path_put(&path);
++	}
++
++	exe = get_task_exe_file(task);
++	if (exe) {
++		if (exe->f_path.mnt == &mnt->mnt) {
++			found = true;
++			pr_warn("VFS: busy umount mnt_id=%d task=%s[%d] exe=%s ino=%lu\n",
++				mnt->mnt_id, task->comm, task_pid_nr(task),
++				path_in_mount(&exe->f_path, buf),
++				file_inode(exe)->i_ino);
++		}
++		fput(exe);
++	}
++
++	files = get_task_files_ref(task);
++	if (!files)
++		return found;
++
++	ctx.found = &found;
++	iterate_fd(files, 0, dump_busy_umount_fd, &ctx);
++	put_files_struct(files);
++
++	return found;
++}
++
++static void dump_busy_umount_pins(struct mount *mnt)
++{
++	struct fs_pin *pin;
++	int nr = 0;
++
++	hlist_for_each_entry(pin, &mnt->mnt_pins, m_list) {
++		pr_warn("VFS: busy umount mnt_id=%d pin[%d] kill=%ps\n",
++			mnt->mnt_id, nr++, pin->kill);
++	}
++}
++
++struct busy_umount_child {
++	struct dentry *mp;
++	const char *fs;
++	const char *dev;
++	int mnt_id;
++	int parent_id;
++	int refs;
++	unsigned int writers;
++	unsigned int flags;
++	bool attached;
++	bool overmount;
++};
++
++static void dump_busy_umount_children(struct mount *mnt, char *buf)
++{
++	struct busy_umount_child info[8] = {};
++	struct mount *child;
++	bool truncated = false;
++	int nr = 0;
++	int i;
++
++	lock_mount_hash();
++	list_for_each_entry(child, &mnt->mnt_mounts, mnt_child) {
++		if (nr >= ARRAY_SIZE(info)) {
++			truncated = true;
++			break;
++		}
++
++		info[nr].mp = dget(child->mnt_mountpoint);
++		info[nr].fs = child->mnt.mnt_sb->s_type->name;
++		info[nr].dev = child->mnt_devname ?: "?";
++		info[nr].mnt_id = child->mnt_id;
++		info[nr].parent_id = child->mnt_parent ? child->mnt_parent->mnt_id : -1;
++		info[nr].refs = mnt_get_count(child);
++		info[nr].writers = mnt_get_writers(child);
++		info[nr].flags = child->mnt.mnt_flags;
++		info[nr].attached = !!child->mnt_ns;
++		info[nr].overmount = !!child->overmount;
++		nr++;
++	}
++	unlock_mount_hash();
++
++	for (i = 0; i < nr; i++) {
++		struct path path = {
++			.mnt = &mnt->mnt,
++			.dentry = info[i].mp,
++		};
++
++		pr_warn("VFS: busy umount child[%d] mnt_id=%d parent_id=%d mp=%s fs=%s dev=%s refs=%d writers=%u flags=0x%x attached=%d overmount=%d\n",
++			i, info[i].mnt_id, info[i].parent_id,
++			path_in_mount(&path, buf), info[i].fs, info[i].dev,
++			info[i].refs, info[i].writers, info[i].flags,
++			info[i].attached, info[i].overmount);
++		dput(info[i].mp);
++	}
++
++	if (truncated)
++		pr_warn("VFS: busy umount mnt_id=%d child list truncated at %zu entries\n",
++			mnt->mnt_id, ARRAY_SIZE(info));
++}
++
++static void dump_busy_umount(struct mount *mnt)
++{
++	struct mount *child;
++	struct task_struct *task;
++	char *buf;
++	const char *mountpoint = "<mountpoint-error>";
++	const char *devname = mnt->mnt_devname ?: "?";
++	int refs;
++	int children = 0;
++	unsigned int writers;
++	bool found = false;
++	bool has_pins;
++
++	buf = (char *)__get_free_page(GFP_KERNEL);
++
++	lock_mount_hash();
++	refs = mnt_get_count(mnt);
++	writers = mnt_get_writers(mnt);
++	has_pins = !hlist_empty(&mnt->mnt_pins);
++	list_for_each_entry(child, &mnt->mnt_mounts, mnt_child)
++		children++;
++	unlock_mount_hash();
++
++	if (buf) {
++		char *name = dentry_path_raw(mnt->mnt_mountpoint, buf, PAGE_SIZE);
++
++		if (!IS_ERR(name))
++			mountpoint = name;
++	}
++
++	pr_warn("VFS: busy umount mountpoint=%s mnt_id=%d fs=%s dev=%s refs=%d writers=%u children=%d pins=%d\n",
++		mountpoint, mnt->mnt_id, mnt->mnt.mnt_sb->s_type->name, devname,
++		refs, writers, children, has_pins);
++
++	if (children)
++		dump_busy_umount_children(mnt, buf);
++
++	if (has_pins)
++		dump_busy_umount_pins(mnt);
++
++	rcu_read_lock();
++	for_each_process(task) {
++		get_task_struct(task);
++		rcu_read_unlock();
++
++		if (dump_busy_umount_task(mnt, task, buf))
++			found = true;
++
++		put_task_struct(task);
++		rcu_read_lock();
++	}
++	rcu_read_unlock();
++
++	if (!found)
++		pr_warn("VFS: busy umount mnt_id=%d has no task refs on exact mount\n",
++			mnt->mnt_id);
++
++	if (buf)
++		free_page((unsigned long)buf);
++}
++
+ static int do_umount(struct mount *mnt, int flags)
+ {
+ 	struct super_block *sb = mnt->mnt.mnt_sb;
+@@ -2040,6 +2310,8 @@ int path_umount(const struct path *path,
+ 	ret = can_umount(path, flags);
+ 	if (!ret)
+ 		ret = do_umount(mnt, flags);
++	if (ret == -EBUSY && !(flags & MNT_DETACH))
++		dump_busy_umount(mnt);
+ 
+ 	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
+ 	dput(path->dentry);
