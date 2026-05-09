@@ -15,6 +15,99 @@ RAMFS_COPY_DATA=	# extra data files
 
 include /lib/upgrade
 
+old_overlay_path() { # <path>
+	case "$1" in
+	/mnt*|/overlay*)
+		return 0
+		;;
+	esac
+
+	return 1
+}
+
+debug_overlay_holders() {
+	local line p pid root cwd exe cmdline fd target found=
+
+	v "overlay move debug: relevant mountinfo follows"
+	while IFS= read -r line; do
+		case "$line" in
+		*" /mnt "*|*" /mnt/overlay "*|*" /overlay "*)
+			v "mountinfo: $line"
+			;;
+		esac
+	done < /proc/self/mountinfo
+
+	for p in /proc/[0-9]*; do
+		[ -d "$p" ] || continue
+
+		pid="${p##*/}"
+		cmdline="$(/bin/busybox cat "$p/cmdline" 2>/dev/null | /bin/busybox tr '\000' ' ')"
+		[ -n "$cmdline" ] || cmdline="[$(/bin/busybox cat "$p/comm" 2>/dev/null)]"
+
+		root="$(/bin/busybox readlink "$p/root" 2>/dev/null)"
+		cwd="$(/bin/busybox readlink "$p/cwd" 2>/dev/null)"
+		exe="$(/bin/busybox readlink "$p/exe" 2>/dev/null)"
+
+		old_overlay_path "$root" && found=1
+		old_overlay_path "$cwd" && found=1
+		old_overlay_path "$exe" && found=1
+
+		if old_overlay_path "$root" || old_overlay_path "$cwd" || old_overlay_path "$exe"; then
+			v "holder pid=$pid root=${root:-?} cwd=${cwd:-?} exe=${exe:-?} cmd=$cmdline"
+		fi
+
+		for fd in "$p"/fd/*; do
+			[ -e "$fd" ] || continue
+
+			target="$(/bin/busybox readlink "$fd" 2>/dev/null)" || continue
+			old_overlay_path "$target" || continue
+
+			found=1
+			v "holder pid=$pid fd=${fd##*/} target=$target"
+		done
+	done
+
+	[ -n "$found" ] || v "overlay move debug: no user-visible holders found"
+}
+
+ramfs_stage2() {
+	RAMFS_COPY_LOSETUP="$(command -v /usr/sbin/losetup)"
+	RAMFS_COPY_LVM="$(command -v lvm)"
+
+	v "overlay teardown debug before remount/umount of old root"
+	debug_overlay_holders
+
+	/bin/mount -o remount,ro /mnt || {
+		v "Failed to remount old root read-only."
+		debug_overlay_holders
+	}
+
+	/bin/umount /mnt || {
+		v "Failed to unmount old root, falling back to lazy umount."
+		debug_overlay_holders
+
+		/bin/umount -l /mnt || {
+			v "Failed to lazy-unmount old root."
+			exit 1
+		}
+	}
+
+	v "overlay teardown debug after old root umount"
+	debug_overlay_holders
+
+	grep -e "^/dev/dm-.*" -e "^/dev/loop.*" /proc/mounts | while read bdev mp _r; do
+		umount $mp
+	done
+
+	[ "$RAMFS_COPY_LOSETUP" ] && losetup -D
+	[ "$RAMFS_COPY_LVM" ] && {
+		mkdir -p /tmp/lvm/cache
+		$RAMFS_COPY_LVM vgchange -aln --ignorelockingfailure
+	}
+
+	exec /bin/busybox ash -c "$COMMAND"
+}
+
 
 supivot() { # <new_root> <old_root>
 	/bin/mount | grep "on $1 type" 2>&- 1>&- || /bin/mount -o bind $1 $1
@@ -25,10 +118,17 @@ supivot() { # <new_root> <old_root>
 		return 1
 	}
 
+	# pivot_root() does not reliably move an inherited cwd off the old
+	# overlay mount. Drop it before the best-effort /mnt/overlay move.
+	cd / || return 1
+
 	/bin/mount -o noatime,move $2/sys /sys
 	/bin/mount -o noatime,move $2/dev /dev
 	/bin/mount -o noatime,move $2/tmp /tmp
-	/bin/mount -o noatime,move $2/overlay /overlay 2>&-
+	/bin/mount -o noatime,move $2/overlay /overlay >/dev/null 2>&1 || {
+		v "Failed to move $2/overlay to /overlay."
+		debug_overlay_holders
+	}
 	return 0
 }
 
@@ -54,7 +154,7 @@ switch_to_ramfs() {
 		[ -n "$file" ] && install_bin "$file"
 	done
 	install_file /etc/resolv.conf /lib/*.sh /lib/functions/*.sh	\
-		/lib/upgrade/*.sh /lib/upgrade/do_stage2 		\
+		/lib/upgrade/*.sh /lib/upgrade/stage2 /lib/upgrade/do_stage2 \
 		/usr/share/libubox/jshn.sh /usr/sbin/fw_setenv		\
 		/etc/fw_env.config $RAMFS_COPY_DATA
 
@@ -67,23 +167,11 @@ switch_to_ramfs() {
 		exit 1
 	}
 
-	/bin/mount -o remount,ro /mnt
-	/bin/umount -l /mnt
+	export RAMFS_STAGE2=1
+	exec /bin/busybox ash /lib/upgrade/stage2 "$IMAGE" "$COMMAND"
 
-	grep -e "^/dev/dm-.*" -e "^/dev/loop.*" /proc/mounts | while read bdev mp _r; do
-		umount $mp
-	done
-
-	[ "$RAMFS_COPY_LOSETUP" ] && losetup -D
-	[ "$RAMFS_COPY_LVM" ] && {
-		mkdir -p /tmp/lvm/cache
-		$RAMFS_COPY_LVM vgchange -aln --ignorelockingfailure
-	}
-
-	grep /overlay /proc/mounts > /dev/null && {
-		/bin/mount -o noatime,remount,ro /overlay
-		/bin/umount -l /overlay
-	}
+	v "Failed to re-exec stage2 from ramfs."
+	exit 1
 }
 
 kill_remaining() { # [ <signal> [ <loop> ] ]
@@ -131,6 +219,8 @@ kill_remaining() { # [ <signal> [ <loop> ] ]
 		}
 	done
 }
+
+[ -n "$RAMFS_STAGE2" ] && ramfs_stage2
 
 indicate_upgrade
 

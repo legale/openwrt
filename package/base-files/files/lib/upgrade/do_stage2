@@ -4,6 +4,58 @@
 
 include /lib/upgrade
 
+old_overlay_path() { # <path>
+	case "$1" in
+	/mnt*|/overlay*)
+		return 0
+		;;
+	esac
+
+	return 1
+}
+
+debug_overlay_holders() {
+	local line p pid root cwd exe cmdline fd target found=
+
+	v "overlay teardown debug before final umount"
+	while IFS= read -r line; do
+		case "$line" in
+		*" /mnt "*|*" /mnt/overlay "*|*" /overlay "*)
+			v "mountinfo: $line"
+			;;
+		esac
+	done < /proc/self/mountinfo
+
+	for p in /proc/[0-9]*; do
+		[ -d "$p" ] || continue
+
+		pid="${p##*/}"
+		cmdline="$(/bin/busybox cat "$p/cmdline" 2>/dev/null | /bin/busybox tr '\000' ' ')"
+		[ -n "$cmdline" ] || cmdline="[$(/bin/busybox cat "$p/comm" 2>/dev/null)]"
+
+		root="$(/bin/busybox readlink "$p/root" 2>/dev/null)"
+		cwd="$(/bin/busybox readlink "$p/cwd" 2>/dev/null)"
+		exe="$(/bin/busybox readlink "$p/exe" 2>/dev/null)"
+
+		if old_overlay_path "$root" || old_overlay_path "$cwd" || old_overlay_path "$exe"; then
+			found=1
+			v "holder pid=$pid root=${root:-?} cwd=${cwd:-?} exe=${exe:-?} cmd=$cmdline"
+		fi
+
+		for fd in "$p"/fd/*; do
+			[ -e "$fd" ] || continue
+
+			target="$(/bin/busybox readlink "$fd" 2>/dev/null)" || continue
+			old_overlay_path "$target" || continue
+
+			found=1
+			v "holder pid=$pid fd=${fd##*/} target=$target"
+		done
+	done
+
+	[ -n "$found" ] || v "overlay teardown debug: no user-visible holders found"
+}
+
 v "Performing system upgrade..."
 if type 'platform_do_upgrade' >/dev/null 2>/dev/null; then
 	platform_do_upgrade "$IMAGE"
@@ -19,6 +71,7 @@ v "Upgrade completed"
 sleep 1
 
 v "Rebooting system..."
+debug_overlay_holders
 umount -a
 reboot -f
 sleep 5

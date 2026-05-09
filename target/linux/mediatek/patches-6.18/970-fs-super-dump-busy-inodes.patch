@@ -1,0 +1,48 @@
+From 4ad72a7b4c9f2a87ab446d2bd8f3bf61e7bd2e15 Mon Sep 17 00:00:00 2001
+From: Ruslan <ruslan@local>
+Date: Fri, 8 May 2026 23:59:00 +0300
+Subject: [PATCH] fs: super: dump busy inodes before poisoning them
+
+When sysupgrade teardown hits the "Busy inodes after unmount" warning we
+want more than just the superblock name. Dump the inode metadata that
+survived evict_inodes() so userspace holder logs can be correlated with
+the remaining VFS objects.
+
+Signed-off-by: Ruslan <ruslan@local>
+---
+ fs/super.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -612,6 +612,21 @@ void retire_super(struct super_block *sb
+ }
+ EXPORT_SYMBOL(retire_super);
+ 
++static void dump_busy_inodes(struct super_block *sb)
++{
++	struct inode *inode;
++	int nr = 0;
++
++	spin_lock(&sb->s_inode_list_lock);
++	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
++		pr_warn("VFS: busy inode[%d] on %s (%s): ino=%lu mode=%o nlink=%u count=%d state=0x%x size=%lld\n",
++			nr++, sb->s_id, sb->s_type->name, inode->i_ino,
++			inode->i_mode, inode->i_nlink, icount_read(inode),
++			inode->i_state, (long long)i_size_read(inode));
++	}
++	spin_unlock(&sb->s_inode_list_lock);
++}
++
+ /**
+  *	generic_shutdown_super	-	common helper for ->kill_sb()
+  *	@sb: superblock to kill
+@@ -650,6 +665,8 @@ void generic_shutdown_super(struct super
+ 		if (CHECK_DATA_CORRUPTION(!list_empty(&sb->s_inodes), NULL,
+ 				"VFS: Busy inodes after unmount of %s (%s)",
+ 				sb->s_id, sb->s_type->name)) {
++			dump_busy_inodes(sb);
++
+ 			/*
+ 			 * Adding a proper bailout path here would be hard, but
+ 			 * we can at least make it more likely that a later

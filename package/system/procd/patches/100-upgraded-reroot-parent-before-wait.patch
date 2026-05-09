@@ -1,0 +1,17 @@
+--- a/upgraded/upgraded.c
++++ b/upgraded/upgraded.c
+@@ -55,6 +55,14 @@ static void sysupgrade(char *path, char *command)
+ 		_exit(EXIT_FAILURE);
+ 	}
+ 
++	/*
++	 * Keep pid 1 on the ramfs prefix while the stage2 child tears down the
++	 * old overlay root. Otherwise pid 1 itself keeps the old root mount
++	 * pinned until reboot.
++	 */
++	if (chroot(".") == 0)
++		chdir("/");
++
+ 	uloop_process_add(&upgrade_proc);
+ 	uloop_run();
+ }
