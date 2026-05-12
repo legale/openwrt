@@ -591,6 +591,19 @@ define U-Boot/mt7981_rfb-nor
   DEPENDS:=+trusted-firmware-a-mt7981-nor-ddr3
 endef
 
+define U-Boot/mt7981_yuncore_ax835-nor
+  NAME:=YunCore AX835
+  DEFAULT:=y if TARGET_mediatek_filogic_DEVICE_yuncore_ax835
+  BUILD_SUBTARGET:=filogic
+  BUILD_DEVICES:=yuncore_ax835
+  UBOOT_CONFIG:=mt7981_yuncore_ax835_nor
+  UBOOT_IMAGE:=u-boot.fip
+  BL2_BOOTDEV:=nor
+  BL2_SOC:=mt7981
+  BL2_DDRTYPE:=ddr3
+  DEPENDS:=+trusted-firmware-a-mt7981-nor-ddr3 +trusted-firmware-a-mt7981-ram-ddr3
+endef
+
 define U-Boot/mt7981_rfb-sd
   NAME:=MT7981 Reference Board
   BUILD_SUBTARGET:=filogic
@@ -1220,6 +1233,7 @@ UBOOT_TARGETS := \
 	mt7981_rfb-spim-nand \
 	mt7981_rfb-emmc \
 	mt7981_rfb-nor \
+	mt7981_yuncore_ax835-nor \
 	mt7981_rfb-sd \
 	mt7981_rfb-snfi \
 	mt7981_routerich_ax3000 \
