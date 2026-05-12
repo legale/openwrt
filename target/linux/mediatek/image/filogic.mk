@@ -21,6 +21,10 @@ define Build/mt7981-bl2
 	cat $(STAGING_DIR_IMAGE)/mt7981-$1-bl2.img >> $@
 endef
 
+define Build/mt7981-ram-bl2
+	cat $(STAGING_DIR_IMAGE)/mt7981-ram-$1-bl2.bin >> $@
+endef
+
 define Build/mt7981-bl31-uboot
 	cat $(STAGING_DIR_IMAGE)/mt7981_$1-u-boot.fip >> $@
 endef
@@ -3301,6 +3305,10 @@ define Device/yuncore_ax835
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
   IMAGE/sysupgrade.bin := append-kernel | pad-to 128k | append-rootfs | pad-rootfs | check-size | append-metadata
   DEVICE_PACKAGES := kmod-mt7915e kmod-mt7981-firmware mt7981-wo-firmware
+  ARTIFACTS := preloader.bin uartboot-bl2.bin bl31-uboot.fip
+  ARTIFACT/preloader.bin := mt7981-bl2 nor-ddr3
+  ARTIFACT/bl31-uboot.fip := mt7981-bl31-uboot yuncore_ax835-nor
+  ARTIFACT/uartboot-bl2.bin := mt7981-ram-bl2 ddr3
 endef
 TARGET_DEVICES += yuncore_ax835
 

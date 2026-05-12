@@ -187,6 +187,7 @@ define Trusted-Firmware-A/mt7981-nor-ddr3
   NAME:=MediaTek MT7981 (SPI-NOR, DDR3)
   BOOT_DEVICE:=nor
   BUILD_SUBTARGET:=filogic
+  BUILD_DEVICES:=yuncore_ax835
   PLAT:=mt7981
   DDR_TYPE:=ddr3
 endef
@@ -201,6 +202,30 @@ define Trusted-Firmware-A/mt7981-ram-ddr3
   RAM_BOOT_UART_DL:=1
   HIDDEN:=
   DEFAULT:=TARGET_mediatek_filogic
+endef
+
+define Trusted-Firmware-A/mt7981-ram-ddr3-1866
+  NAME:=MediaTek MT7981 (RAM, DDR3 2133 MT/s)
+  BOOT_DEVICE:=ram
+  BUILD_SUBTARGET:=filogic
+  BUILD_DEVICES:=yuncore_ax835
+  PLAT:=mt7981
+  DDR_TYPE:=ddr3
+  DDR3_FREQ_1866:=1
+  DRAM_DEBUG_LOG:=0
+  RAM_BOOT_UART_DL:=1
+endef
+
+define Trusted-Firmware-A/mt7981-ram-ddr3-2133
+  NAME:=MediaTek MT7981 (RAM, DDR3 2133 MT/s)
+  BOOT_DEVICE:=ram
+  BUILD_SUBTARGET:=filogic
+  BUILD_DEVICES:=yuncore_ax835
+  PLAT:=mt7981
+  DDR_TYPE:=ddr3
+  DDR3_FREQ_2133:=1
+  DRAM_DEBUG_LOG:=0
+  RAM_BOOT_UART_DL:=1
 endef
 
 define Trusted-Firmware-A/mt7981-emmc-ddr3
@@ -678,6 +703,8 @@ TFA_TARGETS:= \
 	mt7622-sdmmc-1ddr \
 	mt7622-sdmmc-2ddr \
 	mt7981-ram-ddr3 \
+	mt7981-ram-ddr3-1866 \
+	mt7981-ram-ddr3-2133 \
 	mt7981-emmc-ddr3 \
 	mt7981-emmc-ddr3-1866mhz \
 	mt7981-nor-ddr3 \
@@ -748,6 +775,7 @@ TFA_MAKE_FLAGS += \
 	HAVE_DRAM_OBJ_FILE=yes \
 	$(if $(DDR3_FLYBY),DDR3_FLYBY=1) \
 	$(if $(DDR3_FREQ_1866),DDR3_FREQ_1866=1) \
+	$(if $(DDR3_FREQ_2133),DDR3_FREQ_2133=1) \
 	$(if $(DDR4_4BG_MODE),DDR4_4BG_MODE=1) \
 	$(if $(DRAM_USE_COMB),DRAM_USE_COMB=1) \
 	$(if $(RAM_BOOT_UART_DL),RAM_BOOT_UART_DL=1) \
@@ -761,11 +789,14 @@ TFA_MAKE_FLAGS += \
 
 define Package/trusted-firmware-a-ram/install
 	$(INSTALL_DIR) $(STAGING_DIR_IMAGE)
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build/$(PLAT)/release/bl2.bin $(STAGING_DIR_IMAGE)/$(BUILD_VARIANT)-bl2.bin
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/build/$(PLAT)/release/bl2.bin $(BIN_DIR)/$(BUILD_VARIANT)-bl2.bin
 endef
 Package/trusted-firmware-a-mt7622-ram-1ddr/install = $(Package/trusted-firmware-a-ram/install)
 Package/trusted-firmware-a-mt7622-ram-2ddr/install = $(Package/trusted-firmware-a-ram/install)
 Package/trusted-firmware-a-mt7981-ram-ddr3/install = $(Package/trusted-firmware-a-ram/install)
+Package/trusted-firmware-a-mt7981-ram-ddr3-1866/install = $(Package/trusted-firmware-a-ram/install)
+Package/trusted-firmware-a-mt7981-ram-ddr3-2133/install = $(Package/trusted-firmware-a-ram/install)
 Package/trusted-firmware-a-mt7981-ram-ddr4/install = $(Package/trusted-firmware-a-ram/install)
 Package/trusted-firmware-a-mt7986-ram-ddr3/install = $(Package/trusted-firmware-a-ram/install)
 Package/trusted-firmware-a-mt7986-ram-ddr4/install = $(Package/trusted-firmware-a-ram/install)

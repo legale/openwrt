@@ -1,0 +1,29 @@
+From 1b1f749d1bb857c82e6e76d64e2d4f023b20ec1e Mon Sep 17 00:00:00 2001
+From: Ruslan Isaev <legale.legale@gmail.com>
+Date: Tue, 28 Apr 2026 09:55:00 +0300
+Subject: [PATCH] arm-trusted-firmware-mediatek: hack: mt7981: bl2: move FIP
+ offset to 0x60000
+
+YunCore AX835/FAP830 NOR layout stores FIP at 0x60000.
+
+Signed-off-by: Ruslan Isaev <legale.legale@gmail.com>
+---
+ .../src/plat/mediatek/mt7981/bl2/bl2_dev_spi_nor.c              | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plat/mediatek/mt7981/bl2/bl2_dev_spi_nor.c b/plat/mediatek/mt7981/bl2/bl2_dev_spi_nor.c
+index 3460ea045..b9927b998 100644
+--- a/plat/mediatek/mt7981/bl2/bl2_dev_spi_nor.c
++++ b/plat/mediatek/mt7981/bl2/bl2_dev_spi_nor.c
+@@ -8,7 +8,7 @@
+ #include <stdint.h>
+ #include <boot_spi.h>
+ 
+-#define FIP_BASE			0x100000
++#define FIP_BASE			0x60000
+ #define FIP_SIZE			0x80000
+ 
+ #define MTK_QSPI_SRC_CLK		CB_MPLL_D2
+-- 
+2.39.5
+

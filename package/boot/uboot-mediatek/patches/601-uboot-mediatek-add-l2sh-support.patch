@@ -1,0 +1,1688 @@
+From 205a2a3a4298e317b4b5e709a246ad96930ad49e Mon Sep 17 00:00:00 2001
+From: Ruslan Isaev <legale.legale@gmail.com>
+Date: Fri, 1 May 2026 22:04:43 +0300
+Subject: [PATCH] uboot-mediatek: add l2sh support
+
+Signed-off-by: Ruslan Isaev <legale.legale@gmail.com>
+---
+ .../src/board/mediatek/mt7981/mt7981_rfb.c    |   6 +
+ common/console.c   |  38 +-
+ .../mt7981_yuncore_ax835_nor_defconfig        |   1 +
+ include/l2sh.h     |  78 ++
+ .../uboot-mediatek/src/include/l2sh_proto.h   | 402 ++++++++++
+ net/Kconfig        |  33 +
+ net/Makefile       |   1 +
+ net/l2sh.c         | 705 ++++++++++++++++++
+ 8 files changed, 1263 insertions(+), 1 deletion(-)
+ create mode 100644 include/l2sh.h
+ create mode 100644 include/l2sh_proto.h
+ create mode 100644 net/l2sh.c
+
+--- a/board/mediatek/mt7981/mt7981_rfb.c
++++ b/board/mediatek/mt7981/mt7981_rfb.c
+@@ -24,6 +24,7 @@
+ int board_late_init(void)
+ {
+ 	struct udevice *dev;
++	int recovery = 0;
+ 
+ 	gd->env_valid = ENV_VALID;
+ 	if (!button_get_by_label(CONFIG_RESET_BUTTON_LABEL, &dev)) {
+@@ -37,9 +38,14 @@ int board_late_init(void)
+ 		if (button_get_state(dev) == BUTTON_ON) {
+ 			puts("button pushed, resetting environment\n");
+ 			gd->env_valid = ENV_INVALID;
++			recovery = 1;
+ 		}
+ 	}
+ 	env_relocate();
++	// force l2sh in recovery even if persisted env has l2sh=0
++	// принудительно включаем l2sh в recovery, даже если в env было l2sh=0
++	if (recovery && IS_ENABLED(CONFIG_L2SH))
++		env_set("l2sh", "1");
+ 	return 0;
+ }
+ 
+--- a/common/console.c
++++ b/common/console.c
+@@ -20,6 +20,7 @@
+ #include <stdio_dev.h>
+ #include <exports.h>
+ #include <env_internal.h>
++#include <l2sh.h>
+ #include <video_console.h>
+ #include <watchdog.h>
+ #include <asm/global_data.h>
+@@ -526,6 +527,13 @@ int fgetc(int file)
+ 		 */
+ 		for (;;) {
+ 			schedule();
++			if (file == stdin) {
++				// pull network input into the cli before waiting on serial
++				// сначала подаем сетевой ввод в cli, потом ждем serial
++				l2sh_poll();
++				if (l2sh_tstc())
++					return l2sh_getc();
++			}
+ 			if (CONFIG_IS_ENABLED(CONSOLE_MUX)) {
+ 				/*
+ 				 * Upper layer may have already called tstc() so
+@@ -553,8 +561,16 @@ int fgetc(int file)
+ 
+ int ftstc(int file)
+ {
+-	if ((unsigned int)file < MAX_FILES)
++	if ((unsigned int)file < MAX_FILES) {
++		if (file == stdin) {
++			// poll here too so non-blocking stdin keeps the session alive
++			// опрашиваем и здесь, чтобы неблокирующий stdin не давал сессии протухнуть
++			l2sh_poll();
++			if (l2sh_tstc())
++				return 1;
++		}
+ 		return console_tstc(file);
++	}
+ 
+ 	return -1;
+ }
+@@ -614,6 +630,12 @@ int getchar(void)
+ 	if (ch != -1)
+ 		return ch;
+ 
++	// let l2sh preempt the regular console read path
++	// даем l2sh забрать ввод раньше обычного консольного пути
++	l2sh_poll();
++	if (l2sh_tstc())
++		return l2sh_getc();
++
+ 	if (gd->flags & GD_FLG_DEVINIT) {
+ 		/* Get from the standard input */
+ 		return fgetc(stdin);
+@@ -634,6 +656,12 @@ int tstc(void)
+ 	if (console_record_tstc())
+ 		return 1;
+ 
++	// surface pending l2sh input on non-blocking console checks
++	// показываем ожидающий ввод l2sh и в неблокирующих проверках консоли
++	l2sh_poll();
++	if (l2sh_tstc())
++		return 1;
++
+ 	if (gd->flags & GD_FLG_DEVINIT) {
+ 		/* Test the standard input */
+ 		return ftstc(stdin);
+@@ -747,6 +775,10 @@ void putc(const char c)
+ 		pre_console_putc(c);
+ 		serial_putc(c);
+ 	}
++
++	// mirror console output into the active l2sh session
++	// зеркалим вывод консоли в активную сессию l2sh
++	l2sh_putc(c);
+ }
+ 
+ void puts(const char *s)
+@@ -787,6 +819,10 @@ void puts(const char *s)
+ 		pre_console_puts(s);
+ 		serial_puts(s);
+ 	}
++
++	// mirror console output into the active l2sh session
++	// зеркалим вывод консоли в активную сессию l2sh
++	l2sh_puts(s);
+ }
+ 
+ #ifdef CONFIG_CONSOLE_FLUSH_SUPPORT
+--- a/configs/mt7981_yuncore_ax835_nor_defconfig
++++ b/configs/mt7981_yuncore_ax835_nor_defconfig
+@@ -92,6 +92,7 @@ CONFIG_SPI_FLASH_XTX=y
+ CONFIG_SPI_FLASH_MTD=y
+ CONFIG_PHY_FIXED=y
+ CONFIG_MEDIATEK_ETH=y
++CONFIG_L2SH=y
+ CONFIG_PINCTRL=y
+ CONFIG_PINCONF=y
+ CONFIG_PINCTRL_MT7981=y
+--- /dev/null
++++ b/include/l2sh.h
+@@ -0,0 +1,85 @@
++#ifndef __L2SH_H
++#define __L2SH_H
++
++#ifdef __UBOOT__
++
++#include <asm/byteorder.h>
++#include <linux/types.h>
++
++typedef __be16 be16;
++typedef __be32 be32;
++typedef __be64 be64;
++
++#else
++
++#include <arpa/inet.h>
++#include <stdint.h>
++
++typedef uint8_t  u8;
++typedef uint16_t u16;
++typedef uint32_t u32;
++typedef uint64_t u64;
++typedef int8_t   s8;
++typedef int16_t  s16;
++typedef int32_t  s32;
++typedef int64_t  s64;
++
++typedef u16 be16;
++typedef u32 be32;
++typedef u64 be64;
++
++#define cpu_to_be16(x) htons(x)
++#define cpu_to_be32(x) htonl(x)
++#define be16_to_cpu(x) ntohs(x)
++#define be32_to_cpu(x) ntohl(x)
++
++#endif
++
++typedef u8 be8;
++
++#if defined(CONFIG_L2SH) && !defined(CONFIG_XPL_BUILD)
++s32 l2sh_init(void);
++void l2sh_poll(void);
++void l2sh_rx(const u8 *packet, u32 len);
++s32 l2sh_tstc(void);
++s32 l2sh_getc(void);
++void l2sh_putc(const char c);
++void l2sh_puts(const char *s);
++#else
++static inline s32 l2sh_init(void)
++{
++  return 0;
++}
++
++static inline void l2sh_poll(void)
++{
++}
++
++static inline void l2sh_rx(const u8 *packet, u32 len)
++{
++  (void)packet;
++  (void)len;
++}
++
++static inline s32 l2sh_tstc(void)
++{
++  return 0;
++}
++
++static inline s32 l2sh_getc(void)
++{
++  return -1;
++}
++
++static inline void l2sh_putc(const char c)
++{
++  (void)c;
++}
++
++static inline void l2sh_puts(const char *s)
++{
++  (void)s;
++}
++#endif
++
++#endif
+--- /dev/null
++++ b/include/l2sh_proto.h
+@@ -0,0 +1,671 @@
++// l2sh_proto.h - portable header-only protocol helpers for L2 shell
++
++#ifndef L2SH_PROTO_H
++#define L2SH_PROTO_H
++
++#ifdef __UBOOT__
++#include <asm/byteorder.h>
++#include <linux/string.h>
++#include <linux/types.h>
++typedef __be16 be16;
++typedef __be32 be32;
++typedef __be64 be64;
++typedef unsigned long l2s_uptr_t;
++#elif defined(__KERNEL__)
++#include <asm/byteorder.h>
++#include <linux/string.h>
++#include <linux/types.h>
++typedef __be16 be16;
++typedef __be32 be32;
++typedef __be64 be64;
++typedef unsigned long l2s_uptr_t;
++#else
++#include <stddef.h>
++#include <stdint.h>
++#include <string.h>
++typedef uint8_t u8;
++typedef uint16_t u16;
++typedef uint32_t u32;
++typedef uint64_t u64;
++typedef int8_t s8;
++typedef int16_t s16;
++typedef int32_t s32;
++typedef int64_t s64;
++typedef u16 be16;
++typedef u32 be32;
++typedef u64 be64;
++typedef uintptr_t l2s_uptr_t;
++
++static inline u16 l2s_bswap16(u16 v) {
++  return (u16)((u16)(v << 8) | (u16)(v >> 8));
++}
++
++static inline u32 l2s_bswap32(u32 v) {
++  return ((v & 0x000000FFu) << 24) | ((v & 0x0000FF00u) << 8) |
++         ((v & 0x00FF0000u) >> 8) | ((v & 0xFF000000u) >> 24);
++}
++
++static inline u64 l2s_bswap64(u64 v) {
++  return ((v & 0x00000000000000FFULL) << 56) |
++         ((v & 0x000000000000FF00ULL) << 40) |
++         ((v & 0x0000000000FF0000ULL) << 24) |
++         ((v & 0x00000000FF000000ULL) << 8) |
++         ((v & 0x000000FF00000000ULL) >> 8) |
++         ((v & 0x0000FF0000000000ULL) >> 24) |
++         ((v & 0x00FF000000000000ULL) >> 40) |
++         ((v & 0xFF00000000000000ULL) >> 56);
++}
++
++#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
++#define cpu_to_be16(x) ((be16)(x))
++#define cpu_to_be32(x) ((be32)(x))
++#define cpu_to_be64(x) ((be64)(x))
++#define be16_to_cpu(x) ((u16)(x))
++#define be32_to_cpu(x) ((u32)(x))
++#define be64_to_cpu(x) ((u64)(x))
++#else
++#define cpu_to_be16(x) ((be16)l2s_bswap16((u16)(x)))
++#define cpu_to_be32(x) ((be32)l2s_bswap32((u32)(x)))
++#define cpu_to_be64(x) ((be64)l2s_bswap64((u64)(x)))
++#define be16_to_cpu(x) l2s_bswap16((u16)(x))
++#define be32_to_cpu(x) l2s_bswap32((u32)(x))
++#define be64_to_cpu(x) l2s_bswap64((u64)(x))
++#endif
++
++typedef u8 be8;
++#endif
++
++#ifndef __packed
++#define __packed __attribute__((packed))
++#endif
++
++#ifndef ETH_ALEN
++#define ETH_ALEN 6
++#endif
++
++#define L2SH_ETHERTYPE 0x88B5
++#define L2SH_CLIENT_SIGNATURE 0xAABBCCDDu
++#define L2SH_SERVER_SIGNATURE 0xDDCCBBAAu
++#define L2SH_HELLO_VERSION 0x01
++#define L2SH_PROTO_V1 0x01
++#define L2SH_PROTO_V2 0x02
++#define L2SH_PROTO_CUR L2SH_PROTO_V2
++#define L2SH_HELLO_T_SPAWN 0x01
++#define L2SH_HELLO_T_SHELL 0x02
++#define L2SH_HELLO_T_NONCE 0x03
++#define L2SH_HELLO_T_IDLE_TIMEOUT 0x04
++#define L2SH_HELLO_T_HEARTBEAT 0x05
++#define L2SH_HELLO_T_PROTO_VERSION 0x06
++#define L2SH_NONCE_LEN 16
++#define L2SH_MAX_PAYLOAD 1024
++#define L2SH_MAX_DATA (L2SH_MAX_PAYLOAD - L2SH_NONCE_LEN)
++#define L2SH_ARQ_T_DATA 0x80
++#define L2SH_ARQ_T_ACK 0x81
++#define L2SH_ARQ_HDR_LEN 3
++#define L2SH_ARQ_MAX_DATA (L2SH_MAX_DATA - L2SH_ARQ_HDR_LEN)
++#define L2SH_PRNG32_MULT 1664525u
++#define L2SH_PRNG32_ADD 1013904223u
++
++#define L2S_MSG_UNKNOWN ((u8)0)
++#define L2S_MSG_HELLO ((u8)1)
++#define L2S_MSG_DATA ((u8)2)
++#define L2S_MSG_CONTROL ((u8)3)
++
++#define L2S_FRAME_OK ((s32)0)
++#define L2S_FRAME_ERR_ARG ((s32)-1)
++#define L2S_FRAME_ERR_LEN ((s32)-2)
++#define L2S_FRAME_ERR_RANGE ((s32)-3)
++#define L2S_FRAME_ERR_SIGNATURE ((s32)-4)
++#define L2S_FRAME_ERR_SHORT ((s32)-5)
++#define L2S_FRAME_ERR_CRC ((s32)-6)
++#define L2S_FRAME_ERR_FMT ((s32)-7)
++
++typedef struct l2s_eth_hdr {
++  u8 ether_dhost[ETH_ALEN];
++  u8 ether_shost[ETH_ALEN];
++  be16 ether_type;
++} __packed l2s_eth_hdr_t;
++
++typedef struct l2s_frame_header {
++  l2s_eth_hdr_t eth_hdr;
++  be32 signature;
++  be32 payload_size;
++  be32 crc;
++} __packed l2s_frame_header_t;
++
++typedef struct l2s_frame {
++  l2s_frame_header_t header;
++  u8 payload[L2SH_MAX_PAYLOAD];
++} __packed l2s_frame_t;
++
++typedef struct l2s_frame_meta {
++  const u8 *src_mac;
++  const u8 *dst_mac;
++  u32 signature;
++  u8 type;
++  u8 flags;
++} l2s_frame_meta_t;
++
++typedef struct hello_view {
++  const u8 *server_bin_path;
++  u32 server_bin_path_len;
++  const u8 *cmd;
++  u32 cmd_len;
++  u64 nonce;
++  u32 proto_version;
++  s32 idle_timeout_seconds;
++  u8 server_started;
++  u8 shell_started;
++  u8 have_nonce;
++  u8 have_idle_timeout;
++  u8 have_heartbeat;
++  u8 have_proto_version;
++} hello_view_t;
++
++typedef struct hello_builder {
++  const char *spawn_cmd;
++  const char *shell_cmd;
++  u64 nonce;
++  u32 proto_version;
++  s32 idle_timeout_seconds;
++  u8 include_spawn;
++  u8 include_nonce;
++  u8 include_idle_timeout;
++  u8 include_proto_version;
++} hello_builder_t;
++
++typedef struct l2s_arq_view {
++  const u8 *data;
++  u32 data_len;
++  u8 type;
++  u8 seq;
++  u8 ack;
++  u8 is_data;
++  u8 is_ack;
++} l2s_arq_view_t;
++
++static const u8 l2s_shared_key[4] = {0x4a, 0x17, 0x59, 0xc3};
++
++static inline u16 l2s_get_be16(const u8 *buf) {
++  return (u16)((buf[0] << 8) | buf[1]);
++}
++
++static inline u32 l2s_get_be32(const u8 *buf) {
++  return ((u32)buf[0] << 24) | ((u32)buf[1] << 16) |
++         ((u32)buf[2] << 8) | (u32)buf[3];
++}
++
++static inline u64 l2s_get_be64(const u8 *buf) {
++  return ((u64)buf[0] << 56) | ((u64)buf[1] << 48) |
++         ((u64)buf[2] << 40) | ((u64)buf[3] << 32) |
++         ((u64)buf[4] << 24) | ((u64)buf[5] << 16) |
++         ((u64)buf[6] << 8) | (u64)buf[7];
++}
++
++static inline void l2s_put_be16(u8 *buf, u16 val) {
++  buf[0] = (u8)(val >> 8);
++  buf[1] = (u8)val;
++}
++
++static inline void l2s_put_be32(u8 *buf, u32 val) {
++  buf[0] = (u8)(val >> 24);
++  buf[1] = (u8)(val >> 16);
++  buf[2] = (u8)(val >> 8);
++  buf[3] = (u8)val;
++}
++
++static inline void l2s_put_be64(u8 *buf, u64 val) {
++  buf[0] = (u8)(val >> 56);
++  buf[1] = (u8)(val >> 48);
++  buf[2] = (u8)(val >> 40);
++  buf[3] = (u8)(val >> 32);
++  buf[4] = (u8)(val >> 24);
++  buf[5] = (u8)(val >> 16);
++  buf[6] = (u8)(val >> 8);
++  buf[7] = (u8)val;
++}
++
++static inline u32 csum32(const u8 *p, size_t n) {
++  u32 s = 0;
++  size_t i;
++
++  if (!p)
++    return 0;
++
++  for (i = 0; i < n; i++)
++    s += p[i];
++  return s;
++}
++
++static inline void enc_dec(const u8 *input, u8 *output, const u8 *key,
++                           size_t len) {
++  u32 s;
++  size_t i;
++
++  if (!input || !output || !key || !len)
++    return;
++
++  s = 0;
++  s ^= (u32)key[0];
++  s ^= (u32)key[1] << 8;
++  s ^= (u32)key[2] << 16;
++  s ^= (u32)key[3] << 24;
++  s ^= (u32)len;
++
++  for (i = 0; i < len; i++) {
++    u8 ks;
++
++    s = s * L2SH_PRNG32_MULT + L2SH_PRNG32_ADD;
++    ks = (u8)(s ^ (s >> 8) ^ (s >> 16) ^ (s >> 24));
++    ks ^= (u8)i;
++    ks = (u8)(ks + key[i & 3]);
++    output[i] = input[i] ^ ks;
++  }
++}
++
++static inline u64 hello_nonce_seed(void) {
++  static u64 seed = 0x9e3779b97f4a7c15ULL;
++
++  seed ^= seed << 7;
++  seed ^= seed >> 9;
++  seed += 0x7f4a7c159e3779b9ULL;
++  seed ^= (u64)(l2s_uptr_t)&seed;
++  return seed;
++}
++
++static inline void hello_generate_nonce(u8 *nonce, size_t len) {
++  static u64 hello_nonce_counter;
++  u64 state;
++  size_t i = 0;
++
++  if (!nonce || len == 0)
++    return;
++
++  state = hello_nonce_seed() ^ (++hello_nonce_counter);
++  while (i < len) {
++    size_t chunk = len - i;
++    u64 mixed;
++
++    if (chunk > sizeof(mixed))
++      chunk = sizeof(mixed);
++
++    mixed = state ^ (state >> 12) ^ (state << 25);
++    memcpy(nonce + i, &mixed, chunk);
++    state = (state * 6364136223846793005ULL) + 1ULL + hello_nonce_seed();
++    i += chunk;
++  }
++}
++
++static inline s32 hello_write_tlv(u8 *buf, size_t buf_len, size_t *offset,
++                                  u8 type, const u8 *data, u16 data_len) {
++  size_t need;
++
++  if (!buf || !offset)
++    return -1;
++
++  need = (size_t)data_len + 3U;
++  if (*offset > buf_len || buf_len - *offset < need)
++    return -1;
++
++  buf[*offset] = type;
++  l2s_put_be16(buf + *offset + 1, data_len);
++  if (data_len > 0 && data)
++    memcpy(buf + *offset + 3, data, data_len);
++  *offset += need;
++
++  return 0;
++}
++
++static inline s32 hello_write_string_tlv(u8 *buf, size_t buf_len,
++                                         size_t *offset, u8 type,
++                                         const char *str) {
++  const u8 *ptr = NULL;
++  size_t len = 0;
++
++  if (str) {
++    len = strlen(str);
++    if (len > 0xFFFFu)
++      return -1;
++    ptr = (const u8 *)str;
++  }
++
++  return hello_write_tlv(buf, buf_len, offset, type, ptr, (u16)len);
++}
++
++static inline s32 hello_build(u8 *buf, size_t buf_len,
++                              const hello_builder_t *builder) {
++  size_t offset = 0;
++
++  if (!buf || !builder || buf_len == 0)
++    return -1;
++
++  buf[offset++] = L2SH_HELLO_VERSION;
++  if (builder->include_spawn && builder->spawn_cmd && builder->spawn_cmd[0]) {
++    if (hello_write_string_tlv(buf, buf_len, &offset, L2SH_HELLO_T_SPAWN,
++                               builder->spawn_cmd) != 0)
++      return -1;
++  }
++  if (hello_write_string_tlv(buf, buf_len, &offset, L2SH_HELLO_T_SHELL,
++                             builder->shell_cmd ? builder->shell_cmd : "") != 0)
++    return -1;
++  if (builder->include_nonce) {
++    u8 tmp[sizeof(u64)];
++    l2s_put_be64(tmp, builder->nonce);
++    if (hello_write_tlv(buf, buf_len, &offset, L2SH_HELLO_T_NONCE, tmp,
++                        (u16)sizeof(tmp)) != 0)
++      return -1;
++  }
++  if (builder->include_idle_timeout) {
++    u8 tmp[sizeof(u32)];
++    l2s_put_be32(tmp, (u32)builder->idle_timeout_seconds);
++    if (hello_write_tlv(buf, buf_len, &offset, L2SH_HELLO_T_IDLE_TIMEOUT, tmp,
++                        (u16)sizeof(tmp)) != 0)
++      return -1;
++  }
++  if (builder->include_proto_version) {
++    u8 tmp[sizeof(u32)];
++    l2s_put_be32(tmp, builder->proto_version);
++    if (hello_write_tlv(buf, buf_len, &offset, L2SH_HELLO_T_PROTO_VERSION,
++                        tmp,
++                        (u16)sizeof(tmp)) != 0)
++      return -1;
++  }
++
++  return (s32)offset;
++}
++
++static inline s32 hello_build_heartbeat(u8 *buf, size_t buf_len) {
++  size_t offset = 0;
++
++  if (!buf || buf_len == 0)
++    return -1;
++
++  buf[offset++] = L2SH_HELLO_VERSION;
++  if (hello_write_tlv(buf, buf_len, &offset, L2SH_HELLO_T_HEARTBEAT, NULL,
++                      0) != 0)
++    return -1;
++  return (s32)offset;
++}
++
++static inline s32 hello_parse(const u8 *buf, size_t buf_len,
++                              hello_view_t *view) {
++  size_t offset = 0;
++
++  if (!buf || !view || buf_len == 0)
++    return -1;
++
++  memset(view, 0, sizeof(*view));
++  if (buf[offset++] != L2SH_HELLO_VERSION)
++    return -1;
++
++  while (offset + 3 <= buf_len) {
++    u8 type = buf[offset++];
++    u16 tlv_len = l2s_get_be16(buf + offset);
++
++    offset += 2;
++    if (offset + tlv_len > buf_len)
++      return -1;
++
++    switch (type) {
++    case L2SH_HELLO_T_SPAWN:
++      view->server_bin_path = buf + offset;
++      view->server_bin_path_len = tlv_len;
++      view->server_started = 1;
++      break;
++    case L2SH_HELLO_T_SHELL:
++      view->cmd = buf + offset;
++      view->cmd_len = tlv_len;
++      view->shell_started = 1;
++      break;
++    case L2SH_HELLO_T_NONCE:
++      if (tlv_len != sizeof(u64))
++        return -1;
++      view->nonce = l2s_get_be64(buf + offset);
++      view->have_nonce = 1;
++      break;
++    case L2SH_HELLO_T_IDLE_TIMEOUT:
++      if (tlv_len != sizeof(u32))
++        return -1;
++      view->idle_timeout_seconds = (s32)l2s_get_be32(buf + offset);
++      view->have_idle_timeout = 1;
++      break;
++    case L2SH_HELLO_T_HEARTBEAT:
++      view->have_heartbeat = 1;
++      break;
++    case L2SH_HELLO_T_PROTO_VERSION:
++      if (tlv_len != sizeof(u32))
++        return -1;
++      view->proto_version = l2s_get_be32(buf + offset);
++      view->have_proto_version = 1;
++      break;
++    default:
++      break;
++    }
++    offset += tlv_len;
++  }
++
++  if (offset != buf_len)
++    return -1;
++
++  return 0;
++}
++
++static inline size_t l2s_frame_wire_size(size_t payload_len) {
++  if (payload_len > L2SH_MAX_DATA)
++    return 0;
++  return sizeof(l2s_frame_header_t) + L2SH_NONCE_LEN + payload_len;
++}
++
++static inline s32 l2s_build_frame(l2s_frame_t *frame, size_t frame_capacity,
++                                  const l2s_frame_meta_t *meta,
++                                  const void *payload, size_t payload_len) {
++  u8 scratch[L2SH_MAX_DATA];
++  const u8 *src_payload;
++  u8 *nonce_ptr;
++  u8 *data_ptr;
++  size_t frame_len;
++  size_t enc_payload_len;
++  u32 crc;
++  size_t i;
++
++  if (!frame || !meta || !meta->src_mac || !meta->dst_mac)
++    return L2S_FRAME_ERR_ARG;
++  if (payload_len > 0 && !payload)
++    return L2S_FRAME_ERR_ARG;
++  if (payload_len > L2SH_MAX_DATA)
++    return L2S_FRAME_ERR_RANGE;
++
++  src_payload = payload;
++  if (payload_len > 0 && (const u8 *)payload >= (const u8 *)frame &&
++      (const u8 *)payload < (const u8 *)frame + sizeof(*frame)) {
++    memcpy(scratch, payload, payload_len);
++    src_payload = scratch;
++  }
++
++  frame_len = l2s_frame_wire_size(payload_len);
++  if (frame_capacity < sizeof(l2s_frame_header_t) || frame_capacity < frame_len)
++    return L2S_FRAME_ERR_LEN;
++
++  enc_payload_len = L2SH_NONCE_LEN + payload_len;
++  memset(&frame->header, 0, sizeof(frame->header));
++  memcpy(frame->header.eth_hdr.ether_shost, meta->src_mac, ETH_ALEN);
++  memcpy(frame->header.eth_hdr.ether_dhost, meta->dst_mac, ETH_ALEN);
++  l2s_put_be16((u8 *)&frame->header.eth_hdr.ether_type, L2SH_ETHERTYPE);
++  l2s_put_be32((u8 *)&frame->header.signature, meta->signature);
++  l2s_put_be32((u8 *)&frame->header.payload_size, (u32)enc_payload_len);
++  frame->header.crc = 0;
++
++  nonce_ptr = frame->payload;
++  data_ptr = frame->payload + L2SH_NONCE_LEN;
++  hello_generate_nonce(nonce_ptr, L2SH_NONCE_LEN);
++  if (payload_len > 0)
++    memcpy(data_ptr, src_payload, payload_len);
++
++  if (payload_len > 0) {
++    for (i = 0; i < payload_len; i++)
++      data_ptr[i] ^= nonce_ptr[i & (L2SH_NONCE_LEN - 1)];
++    enc_dec(data_ptr, data_ptr, l2s_shared_key, payload_len);
++  }
++
++  frame->header.crc = 0;
++  crc = csum32((const u8 *)frame, frame_len);
++  l2s_put_be32((u8 *)&frame->header.crc, crc);
++
++  if (payload_len > 0)
++    enc_dec(data_ptr, data_ptr, (const u8 *)&frame->header.crc, payload_len);
++
++  return (s32)frame_len;
++}
++
++static inline s32 l2s_parse_frame(l2s_frame_t *frame, size_t frame_len,
++                                  u32 expected_signature,
++                                  size_t *payload_len_out) {
++  size_t payload_size;
++  size_t expected_len;
++  size_t data_len;
++  u32 recv_crc;
++  u32 calc_crc;
++  be32 saved_crc;
++  u8 nonce[L2SH_NONCE_LEN];
++  u8 *nonce_ptr;
++  u8 *data_ptr;
++  size_t i;
++
++  if (!frame)
++    return L2S_FRAME_ERR_ARG;
++  if (frame_len < sizeof(l2s_frame_header_t))
++    return L2S_FRAME_ERR_SHORT;
++  if (l2s_get_be16((const u8 *)&frame->header.eth_hdr.ether_type) !=
++      L2SH_ETHERTYPE)
++    return L2S_FRAME_ERR_ARG;
++  if (l2s_get_be32((const u8 *)&frame->header.signature) != expected_signature)
++    return L2S_FRAME_ERR_SIGNATURE;
++
++  payload_size = l2s_get_be32((const u8 *)&frame->header.payload_size);
++  if (payload_size > L2SH_MAX_PAYLOAD)
++    return L2S_FRAME_ERR_RANGE;
++  if (payload_size < L2SH_NONCE_LEN)
++    return L2S_FRAME_ERR_FMT;
++
++  expected_len = sizeof(l2s_frame_header_t) + payload_size;
++  if (frame_len < expected_len)
++    return L2S_FRAME_ERR_SHORT;
++
++  data_len = payload_size - L2SH_NONCE_LEN;
++  nonce_ptr = frame->payload;
++  data_ptr = frame->payload + L2SH_NONCE_LEN;
++  recv_crc = l2s_get_be32((const u8 *)&frame->header.crc);
++
++  if (data_len > 0)
++    enc_dec(data_ptr, data_ptr, (const u8 *)&frame->header.crc, data_len);
++
++  saved_crc = frame->header.crc;
++  frame->header.crc = 0;
++  calc_crc = csum32((const u8 *)frame, expected_len);
++  frame->header.crc = saved_crc;
++  if (recv_crc != calc_crc)
++    return L2S_FRAME_ERR_CRC;
++
++  if (data_len > 0) {
++    memcpy(nonce, nonce_ptr, sizeof(nonce));
++    enc_dec(data_ptr, data_ptr, l2s_shared_key, data_len);
++    for (i = 0; i < data_len; i++)
++      frame->payload[i] = data_ptr[i] ^ nonce[i & (L2SH_NONCE_LEN - 1)];
++  }
++
++  if (payload_len_out)
++    *payload_len_out = data_len;
++  return L2S_FRAME_OK;
++}
++
++static inline s32 build_packet(l2s_frame_t *packet, size_t payload_size,
++                               const u8 src_mac[ETH_ALEN],
++                               const u8 dst_mac[ETH_ALEN], u32 signature) {
++  l2s_frame_meta_t meta = {
++      .src_mac = src_mac,
++      .dst_mac = dst_mac,
++      .signature = signature,
++      .type = L2S_MSG_DATA,
++      .flags = 0,
++  };
++
++  return l2s_build_frame(packet, sizeof(*packet), &meta,
++                         payload_size > 0 ? packet->payload : NULL,
++                         payload_size);
++}
++
++static inline s32 parse_packet(l2s_frame_t *packet, s32 frame_len,
++                               u32 expected_signature) {
++  size_t payload_len = 0;
++  s32 rc;
++
++  if (frame_len < 0)
++    return L2S_FRAME_ERR_SHORT;
++
++  rc = l2s_parse_frame(packet, (size_t)frame_len, expected_signature,
++                       &payload_len);
++  if (rc != L2S_FRAME_OK)
++    return rc;
++  return (s32)payload_len;
++}
++
++static inline s32 l2s_arq_build_data(u8 *buf, size_t buf_len, u8 seq, u8 ack,
++                                     const void *data, size_t data_len) {
++  if (!buf)
++    return -1;
++  if (data_len > 0 && !data)
++    return -1;
++  if (data_len > L2SH_ARQ_MAX_DATA)
++    return -1;
++  if (buf_len < L2SH_ARQ_HDR_LEN + data_len)
++    return -1;
++
++  buf[0] = L2SH_ARQ_T_DATA;
++  buf[1] = seq;
++  buf[2] = ack;
++  if (data_len > 0)
++    memcpy(buf + L2SH_ARQ_HDR_LEN, data, data_len);
++  return (s32)(L2SH_ARQ_HDR_LEN + data_len);
++}
++
++static inline s32 l2s_arq_build_ack(u8 *buf, size_t buf_len, u8 ack) {
++  if (!buf || buf_len < L2SH_ARQ_HDR_LEN)
++    return -1;
++
++  buf[0] = L2SH_ARQ_T_ACK;
++  buf[1] = 0;
++  buf[2] = ack;
++  return L2SH_ARQ_HDR_LEN;
++}
++
++static inline s32 l2s_arq_parse(const u8 *buf, size_t len,
++                                l2s_arq_view_t *view) {
++  if (!buf || !view)
++    return -1;
++
++  memset(view, 0, sizeof(*view));
++  if (len == 0)
++    return 0;
++  if (buf[0] != L2SH_ARQ_T_DATA && buf[0] != L2SH_ARQ_T_ACK)
++    return 0;
++  if (len < L2SH_ARQ_HDR_LEN)
++    return -1;
++
++  view->type = buf[0];
++  view->seq = buf[1];
++  view->ack = buf[2];
++
++  if (view->type == L2SH_ARQ_T_ACK) {
++    if (len != L2SH_ARQ_HDR_LEN)
++      return -1;
++    view->is_ack = 1;
++    return 1;
++  }
++
++  view->is_data = 1;
++  view->data = buf + L2SH_ARQ_HDR_LEN;
++  view->data_len = (u32)(len - L2SH_ARQ_HDR_LEN);
++  return 1;
++}
++
++#endif /* L2SH_PROTO_H */
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -37,6 +37,39 @@ config NETCONSOLE
+ 	  Support the 'nc' input/output device for networked console.
+ 	  See doc/usage/netconsole.rst for details.
+ 
++config L2SH
++	bool "l2sh transport"
++	depends on DM_ETH
++	help
++	  Enable a raw Ethernet shell transport compatible with the existing
++	  l2sh client protocol. This bypasses IP, ARP, UDP and TCP.
++	  The matching OpenWrt client is packaged as /usr/bin/l2sh.
++
++config L2SH_TIMEOUT_MS
++	int "l2sh session timeout in milliseconds"
++	depends on L2SH
++	default 30000
++	range 1000 600000
++	help
++	  Timeout for an inactive l2sh session.
++
++config L2SH_RX_SIZE
++	int "l2sh RX ring size in bytes"
++	depends on L2SH
++	default 1024
++	range 256 4096
++	help
++	  Fixed-size receive ring for bytes going into the U-Boot CLI.
++
++config L2SH_TX_SIZE
++	int "l2sh TX ring size in bytes"
++	depends on L2SH
++	default 2048
++	range 512 8192
++	help
++	  Fixed-size transmit ring for console output mirrored to the active
++	  l2sh session.
++
+ config IP_DEFRAG
+ 	bool "Support IP datagram reassembly"
+ 	help
+--- a/net/Makefile
++++ b/net/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_CMD_TFTPBOOT) += tftp.o
+ obj-$(CONFIG_$(PHASE_)UDP_FUNCTION_FASTBOOT)  += fastboot_udp.o
+ obj-$(CONFIG_$(PHASE_)TCP_FUNCTION_FASTBOOT)  += fastboot_tcp.o
+ obj-$(CONFIG_CMD_WOL)  += wol.o
++obj-$(CONFIG_L2SH) += l2sh.o
+ obj-$(CONFIG_PROT_UDP) += udp.o
+ obj-$(CONFIG_PROT_TCP) += tcp.o
+ obj-$(CONFIG_WGET) += wget.o
+--- /dev/null
++++ b/net/l2sh.c
+@@ -0,0 +1,665 @@
++// l2sh.c - L2SH core implementation
++
++#include <config.h>
++#include <dm.h>
++#include <env.h>
++#include <l2sh.h>
++#include <l2sh_proto.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <net.h>
++#include <serial.h>
++#include <stdarg.h>
++#include <time.h>
++#include <vsprintf.h>
++
++#define L2SH_DEDUP_SLOTS 16
++#define L2SH_DEDUP_WINDOW_US 2000UL
++#define L2SH_HELLO_TIMEOUT_MAX 600
++#define L2SH_ETH_RETRY_MIN_MS 5000UL
++#define L2SH_ETH_RETRY_MAX_MS 30000UL
++#define L2SH_TX_BUDGET 8
++
++struct l2sh_ring {
++  u32 head;
++  u32 tail;
++  u32 count;
++};
++
++struct l2sh_dedup_entry {
++  u64 ts_us;
++  size_t len;
++  u32 checksum;
++  s32 valid;
++};
++
++enum l2sh_state {
++  L2SH_IDLE = 0,
++  L2SH_WAIT_CONFIRM,
++  L2SH_ACTIVE,
++};
++
++struct l2sh_ctx {
++  s32 inited;
++  s32 polling;
++  enum l2sh_state state;
++  u64 last_rx_ms;
++  u64 timeout_ms;
++  u64 eth_last_try_ms;
++  u64 eth_retry_ms;
++  u64 pending_nonce;
++  u8 peer_mac[ARP_HLEN];
++  struct l2sh_ring rx_ring;
++  struct l2sh_ring tx_ring;
++  l2s_frame_t tx_frame;
++  u8 rx_buf[CONFIG_L2SH_RX_SIZE];
++  u8 tx_buf[CONFIG_L2SH_TX_SIZE];
++  struct l2sh_dedup_entry dedup[L2SH_DEDUP_SLOTS];
++  u32 dedup_next;
++};
++
++static struct l2sh_ctx l2sh;
++extern int net_busy_flag;
++static void l2sh_reset_session(void);
++
++static s32 l2sh_dbg_enabled(void) {
++  return env_get_yesno("l2sh_debug") == 1;
++}
++
++static const char *l2sh_state_name(enum l2sh_state state) {
++  switch (state) {
++  case L2SH_IDLE:
++    return "idle";
++  case L2SH_WAIT_CONFIRM:
++    return "wait_confirm";
++  case L2SH_ACTIVE:
++    return "active";
++  default:
++    return "unknown";
++  }
++}
++
++static const char *l2sh_fmt_mac(const u8 *mac, char *buf, size_t len) {
++  if (!buf || !len) return "";
++
++  if (!mac) {
++    snprintf(buf, len, "<nil>");
++    return buf;
++  }
++
++  snprintf(buf, len, "%02x:%02x:%02x:%02x:%02x:%02x",
++           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
++  return buf;
++}
++
++static void l2sh_dbg(const char *fmt, ...) {
++  char buf[256];
++  s32 len;
++  va_list ap;
++
++  if (!l2sh_dbg_enabled()) return;
++
++  va_start(ap, fmt);
++  len = vsnprintf(buf, sizeof(buf), fmt, ap);
++  va_end(ap);
++  if (len < 0) return;
++
++  serial_puts("[l2sh] ");
++  serial_puts(buf);
++  serial_putc('\n');
++}
++
++static u32 l2sh_ring_space(const struct l2sh_ring *ring,
++                           u32 size) {
++  return size - ring->count;
++}
++
++static u32 l2sh_ring_push(struct l2sh_ring *ring, u8 *buf,
++                          u32 size, const u8 *data,
++                          u32 len) {
++  u32 pushed;
++  u32 n;
++
++  if (!ring || !buf || !data || !size) return 0;
++
++  pushed = 0;
++  while (pushed < len && ring->count < size) {
++    n = len - pushed;
++    if (n > size - ring->head) n = size - ring->head;
++    if (n > size - ring->count) n = size - ring->count;
++
++    memcpy(buf + ring->head, data + pushed, n);
++    ring->head = (ring->head + n) % size;
++    ring->count += n;
++    pushed += n;
++  }
++
++  return pushed;
++}
++
++static u32 l2sh_ring_pop(struct l2sh_ring *ring, u8 *buf, u32 size, u8 *data, u32 len) {
++  u32 popped;
++  u32 n;
++
++  if (!ring || !buf || !data || !size) return 0;
++
++  popped = 0;
++  while (popped < len && ring->count) {
++    n = len - popped;
++    if (n > size - ring->tail) n = size - ring->tail;
++    if (n > ring->count) n = ring->count;
++
++    memcpy(data + popped, buf + ring->tail, n);
++    ring->tail = (ring->tail + n) % size;
++    ring->count -= n;
++    popped += n;
++  }
++
++  return popped;
++}
++
++static s32 l2sh_parse_nonce_confirm(const u8 *buf, size_t len, u64 *nonce) {
++  char tmp[64];
++  char *end;
++  u32 n;
++
++  if (!buf || !len || !nonce) return -1;
++
++  if (len < 15) return -1;
++
++  if (memcmp(buf, "nonce_confirm=", 14)) return -1;
++
++  n = len;
++  if (n >= sizeof(tmp)) n = sizeof(tmp) - 1;
++
++  memcpy(tmp, buf, n);
++  tmp[n] = '\0';
++
++  *nonce = simple_strtoull(tmp + 14, &end, 16);
++  if (end == tmp + 14) return -1;
++
++  return 0;
++}
++
++static void l2sh_update_timeout(const hello_view_t *hello) {
++  u64 timeout_ms;
++
++  timeout_ms = CONFIG_L2SH_TIMEOUT_MS;
++  if (hello && hello->have_idle_timeout) {
++    if (hello->idle_timeout_seconds <= 0)
++      timeout_ms = CONFIG_L2SH_TIMEOUT_MS;
++    else if (hello->idle_timeout_seconds > L2SH_HELLO_TIMEOUT_MAX)
++      timeout_ms = L2SH_HELLO_TIMEOUT_MAX * 1000UL;
++    else
++      timeout_ms = (u64)hello->idle_timeout_seconds * 1000UL;
++  }
++
++  l2sh.timeout_ms = timeout_ms;
++}
++
++static void l2sh_touch_rx(void) {
++  l2sh.last_rx_ms = get_timer(0);
++}
++
++static s32 l2sh_runtime_enabled(void) {
++  s32 ret;
++
++  ret = env_get_yesno("l2sh");
++  if (ret == 0)
++    return 0;
++
++  return 1;
++}
++
++static void l2sh_reset_rings(void) {
++  memset(&l2sh.rx_ring, 0, sizeof(l2sh.rx_ring));
++  memset(&l2sh.tx_ring, 0, sizeof(l2sh.tx_ring));
++}
++
++static void l2sh_reset_session(void) {
++  if (l2sh.state != L2SH_IDLE) l2sh_dbg("session reset from=%s", l2sh_state_name(l2sh.state));
++
++  l2sh.state = L2SH_IDLE;
++  l2sh.pending_nonce = 0;
++  memset(l2sh.peer_mac, 0, sizeof(l2sh.peer_mac));
++  l2sh_reset_rings();
++  l2sh_update_timeout(NULL);
++}
++
++static s32 l2sh_ensure_eth(void) {
++  struct udevice *dev;
++  s32 ret;
++
++  dev = eth_get_dev();
++  if (!dev) {
++    l2sh_dbg("eth current device is null");
++    return -ENODEV;
++  }
++
++  if (eth_is_active(dev)) {
++    l2sh.eth_last_try_ms = 0;
++    l2sh.eth_retry_ms = 0;
++    return 0;
++  }
++
++  if (l2sh.eth_retry_ms && get_timer(l2sh.eth_last_try_ms) < l2sh.eth_retry_ms) return -EAGAIN;
++
++  l2sh_dbg("eth start dev=%s", dev->name);
++  ret = eth_start_udev(dev);
++  l2sh.eth_last_try_ms = get_timer(0);
++  if (ret) {
++    if (l2sh.eth_retry_ms < L2SH_ETH_RETRY_MIN_MS) l2sh.eth_retry_ms = L2SH_ETH_RETRY_MIN_MS;
++    // double the retry window until the max cap
++    // сдвиг влево на один бит здесь просто умножает окно повтора на два
++    else if (l2sh.eth_retry_ms < L2SH_ETH_RETRY_MAX_MS)
++      l2sh.eth_retry_ms <<= 1;
++
++    if (l2sh.eth_retry_ms > L2SH_ETH_RETRY_MAX_MS) l2sh.eth_retry_ms = L2SH_ETH_RETRY_MAX_MS;
++
++    l2sh_dbg("eth start failed ret=%d retry_ms=%lu", ret, l2sh.eth_retry_ms);
++    return ret;
++  }
++
++  l2sh_dbg("eth start ok dev=%s", dev->name);
++  l2sh.eth_last_try_ms = 0;
++  l2sh.eth_retry_ms = 0;
++
++  return 0;
++}
++
++static s32 l2sh_build_frame(l2s_frame_t *frame, const u8 *src,
++                            const u8 *dst, u32 signature,
++                            const void *payload, size_t payload_len) {
++  l2s_frame_meta_t meta = {
++    .src_mac = src,
++    .dst_mac = dst,
++    .signature = signature,
++    .type = L2S_MSG_DATA,
++    .flags = 0,
++  };
++  s32 ret;
++
++  if (!frame || !src || !dst) return -EINVAL;
++  ret = l2s_build_frame(frame, sizeof(*frame), &meta, payload, payload_len);
++  if (ret < 0) return -EINVAL;
++
++  return ret;
++}
++
++static u32 l2sh_frame_fingerprint(const l2s_frame_t *frame, size_t len) {
++  u32 crc;
++  u32 sig;
++  u32 plen;
++
++  if (!frame || len < sizeof(frame->header)) return 0;
++
++  crc = be32_to_cpu(frame->header.crc);
++  sig = be32_to_cpu(frame->header.signature);
++  plen = be32_to_cpu(frame->header.payload_size);
++
++  // fold the stable header fields into one cheap duplicate key
++  // xor crc, signature и длины дает дешевый ключ для отсева дублей без полного сравнения буфера
++  return crc ^ sig ^ plen;
++}
++
++static s32 l2sh_drop_dup(const l2s_frame_t *frame, size_t len) {
++  u64 now_us;
++  u32 i;
++  u32 checksum;
++  struct l2sh_dedup_entry *ent;
++
++  // some eth paths can hand us the same frame more than once
++  // некоторые eth-драйверы могут отдать один и тот же кадр повторно
++  now_us = timer_get_us();
++  checksum = l2sh_frame_fingerprint(frame, len);
++
++  for (i = 0; i < L2SH_DEDUP_SLOTS; i++) {
++    ent = &l2sh.dedup[i];
++    if (!ent->valid)
++      continue;
++    if (now_us > ent->ts_us &&
++        now_us - ent->ts_us > L2SH_DEDUP_WINDOW_US) {
++      ent->valid = 0;
++      continue;
++    }
++    if (ent->valid && ent->len == len && ent->checksum == checksum) {
++      ent->ts_us = now_us;
++      return 1;
++    }
++  }
++
++  ent = &l2sh.dedup[l2sh.dedup_next];
++  ent->valid = 1;
++  ent->ts_us = now_us;
++  ent->len = len;
++  ent->checksum = checksum;
++  l2sh.dedup_next = (l2sh.dedup_next + 1) % L2SH_DEDUP_SLOTS;
++
++  return 0;
++}
++
++static s32 l2sh_accept_dst_mac(const u8 *dst, const u8 *our) {
++  if (!dst || !our) return 0;
++
++  if (!memcmp(dst, our, ARP_HLEN)) return 1;
++
++  if (!memcmp(dst, net_bcast_ethaddr, ARP_HLEN)) return 1;
++
++  return 0;
++}
++
++static s32 l2sh_rx_enq(const u8 *data, size_t len) {
++  u32 pushed;
++
++  if (!data || !len) return 0;
++
++  pushed = l2sh_ring_push(&l2sh.rx_ring, l2sh.rx_buf,
++                          ARRAY_SIZE(l2sh.rx_buf), data, len);
++  if (pushed != len) l2sh_dbg("rx ring full pushed=%u dropped=%zu", pushed, len - pushed);
++
++  return pushed;
++}
++
++static s32 l2sh_send_payload(const void *data, size_t len) {
++  struct udevice *dev;
++  const u8 *src;
++  char src_mac[18];
++  char dst_mac[18];
++  s32 frame_len;
++  s32 ret;
++
++  if (l2sh.state == L2SH_IDLE) return -EINVAL;
++  if (!data && len) return -EINVAL;
++
++  ret = l2sh_ensure_eth();
++  if (ret) return ret;
++
++  dev = eth_get_dev();
++  src = eth_get_ethaddr();
++  if (!dev || !src) return -ENODEV;
++
++  frame_len = l2sh_build_frame(&l2sh.tx_frame, src, l2sh.peer_mac, L2SH_SERVER_SIGNATURE, data, len);
++  if (frame_len < 0) return frame_len;
++
++  l2sh_dbg("tx frame len=%d payload=%zu src=%s dst=%s state=%s",
++           frame_len, len,
++           l2sh_fmt_mac(src, src_mac, sizeof(src_mac)),
++           l2sh_fmt_mac(l2sh.peer_mac, dst_mac, sizeof(dst_mac)),
++           l2sh_state_name(l2sh.state));
++  ret = eth_send(&l2sh.tx_frame, frame_len);
++  if (ret < 0) {
++    l2sh_dbg("tx failed ret=%d len=%d", ret, frame_len);
++    return ret;
++  }
++
++  l2sh_dbg("tx ok ret=%d len=%d", ret, frame_len);
++
++  return 0;
++}
++
++static void l2sh_send_ready(u64 nonce) {
++  char msg[64];
++  s32 len;
++
++  len = snprintf(msg, sizeof(msg),
++                 "ready nonce=%016llx source=userland\n",
++                 (u64)nonce);
++  if (len <= 0) return;
++
++  l2sh_dbg("send ready nonce=%016llx", (u64)nonce);
++  if (l2sh_send_payload(msg, len) < 0) l2sh_reset_session();
++}
++
++static void l2sh_handle_hello(const u8 *src_mac, const hello_view_t *hello) {
++  char mac[18];
++
++  if (!src_mac || !hello || !hello->have_nonce) return;
++
++  // keep one peer until the session is reset
++  // пока сессия не сброшена, принимаем hello только от уже выбранного peer
++  if (l2sh.state != L2SH_IDLE && memcmp(l2sh.peer_mac, src_mac, ARP_HLEN)) {
++    l2sh_dbg("ignore hello from foreign mac=%s state=%s",
++             l2sh_fmt_mac(src_mac, mac, sizeof(mac)), l2sh_state_name(l2sh.state));
++    return;
++  }
++
++  memcpy(l2sh.peer_mac, src_mac, ARP_HLEN);
++  l2sh.pending_nonce = hello->nonce;
++  l2sh_update_timeout(hello);
++  l2sh_touch_rx();
++  l2sh.state = L2SH_WAIT_CONFIRM;
++  l2sh_dbg("hello mac=%s nonce=%016llx timeout_ms=%lu",
++           l2sh_fmt_mac(src_mac, mac, sizeof(mac)),
++           (u64)hello->nonce, l2sh.timeout_ms);
++  l2sh_send_ready(hello->nonce);
++}
++
++static void l2sh_handle_payload(const u8 *src_mac, const u8 *data, size_t len) {
++  hello_view_t hello;
++  u64 nonce;
++  char mac[18];
++
++  if (!src_mac || !data) return;
++
++  if (!memcmp(src_mac, l2sh.peer_mac, ARP_HLEN)) l2sh_touch_rx();
++
++  if (!hello_parse(data, len, &hello)) {
++    if (hello.have_heartbeat) {
++      if (l2sh.state != L2SH_IDLE && !memcmp(src_mac, l2sh.peer_mac, ARP_HLEN)) l2sh_touch_rx();
++      l2sh_dbg("heartbeat mac=%s", l2sh_fmt_mac(src_mac, mac, sizeof(mac)));
++      return;
++    }
++
++    l2sh_handle_hello(src_mac, &hello);
++    return;
++  }
++
++  if (l2sh.state == L2SH_WAIT_CONFIRM &&
++      !memcmp(src_mac, l2sh.peer_mac, ARP_HLEN) &&
++      !l2sh_parse_nonce_confirm(data, len, &nonce) &&
++      nonce == l2sh.pending_nonce) {
++    l2sh.pending_nonce = 0;
++    l2sh_touch_rx();
++    l2sh.state = L2SH_ACTIVE;
++    l2sh_dbg("nonce confirm mac=%s session active", l2sh_fmt_mac(src_mac, mac, sizeof(mac)));
++    return;
++  }
++
++  if (l2sh.state != L2SH_ACTIVE)
++    return;
++
++  if (memcmp(src_mac, l2sh.peer_mac, ARP_HLEN))
++    return;
++
++  (void)l2sh_rx_enq(data, len);
++  l2sh_dbg("rx data mac=%s len=%zu", l2sh_fmt_mac(src_mac, mac, sizeof(mac)), len);
++}
++
++static void l2sh_check_timeout(void) {
++  if (l2sh.state == L2SH_IDLE)
++    return;
++
++  if (get_timer(l2sh.last_rx_ms) >= l2sh.timeout_ms) {
++    l2sh_dbg("session timeout state=%s timeout_ms=%lu", l2sh_state_name(l2sh.state), l2sh.timeout_ms);
++    l2sh_reset_session();
++  }
++}
++
++static void l2sh_tx_drain(void) {
++  u8 plain[L2SH_MAX_DATA];
++  u32 count;
++  s32 sent;
++  s32 budget;
++
++  if (l2sh.state != L2SH_ACTIVE) return;
++
++  budget = L2SH_TX_BUDGET;
++  while (l2sh.tx_ring.count && budget--) {
++    count = l2sh.tx_ring.count;
++    if (count > sizeof(plain))
++      count = sizeof(plain);
++
++    count = l2sh_ring_pop(&l2sh.tx_ring, l2sh.tx_buf,
++                          ARRAY_SIZE(l2sh.tx_buf), plain, count);
++    if (!count) break;
++
++    sent = l2sh_send_payload(plain, count);
++    if (sent < 0) {
++      l2sh_reset_session();
++      break;
++    }
++  }
++}
++
++void l2sh_rx(const u8 *packet, u32 len) {
++  l2s_frame_t *frame;
++  const u8 *payload;
++  const u8 *our_mac;
++  size_t payload_len;
++  u32 sig;
++  be16 etype;
++  s32 parse_ret;
++  char src_mac[18];
++  char dst_mac[18];
++
++  l2sh_init();
++
++  if (!l2sh_runtime_enabled())
++    return;
++
++  if (!packet || len < sizeof(l2s_frame_header_t))
++    return;
++
++  our_mac = eth_get_ethaddr();
++  if (!our_mac)
++    return;
++
++  frame = (l2s_frame_t *)packet;
++  etype = frame->header.eth_hdr.ether_type;
++  if (be16_to_cpu(etype) != L2SH_ETHERTYPE)
++    return;
++
++  if (!l2sh_accept_dst_mac(frame->header.eth_hdr.ether_dhost, our_mac))
++    return;
++
++  sig = be32_to_cpu(frame->header.signature);
++  l2sh_dbg("rx raw len=%u src=%s dst=%s sig=%08x state=%s",
++           len,
++           l2sh_fmt_mac(frame->header.eth_hdr.ether_shost,
++                        src_mac, sizeof(src_mac)),
++           l2sh_fmt_mac(frame->header.eth_hdr.ether_dhost,
++                        dst_mac, sizeof(dst_mac)),
++           sig, l2sh_state_name(l2sh.state));
++
++  parse_ret = l2s_parse_frame(frame, len, L2SH_CLIENT_SIGNATURE, &payload_len);
++  if (parse_ret) {
++    l2sh_dbg("parse failed ret=%d sig=%08x len=%u", parse_ret, sig, len);
++    return;
++  }
++
++  if (l2sh_drop_dup(frame, len))
++    return;
++
++  payload = frame->payload;
++  l2sh_handle_payload(frame->header.eth_hdr.ether_shost, payload, payload_len);
++}
++
++s32 l2sh_init(void) {
++  if (l2sh.inited) return 0;
++
++  memset(&l2sh, 0, sizeof(l2sh));
++  l2sh.inited = 1;
++  l2sh_update_timeout(NULL);
++  l2sh_reset_session();
++
++  return 0;
++}
++
++void l2sh_poll(void) {
++  s32 ret;
++
++  l2sh_init();
++
++  // console paths can re-enter here through getc and putc
++  // getc и putc могут зайти сюда повторно, поэтому защищаемся от рекурсии
++  if (l2sh.polling)
++    return;
++
++  l2sh.polling = 1;
++
++  if (!l2sh_runtime_enabled()) {
++    if (l2sh.state != L2SH_IDLE)
++      l2sh_reset_session();
++    goto out;
++  }
++
++  if (!net_busy_flag) {
++    ret = l2sh_ensure_eth();
++    if (!ret) {
++      ret = net_init();
++      if (!ret)
++        (void)eth_rx();
++    }
++  }
++
++  l2sh_check_timeout();
++  l2sh_tx_drain();
++
++out:
++  l2sh.polling = 0;
++}
++
++s32 l2sh_tstc(void) {
++  if (!l2sh_runtime_enabled()) return 0;
++
++  return l2sh.rx_ring.count > 0;
++}
++
++s32 l2sh_getc(void) {
++  u8 ch;
++
++  if (!l2sh_tstc()) return -1;
++
++  if (!l2sh_ring_pop(&l2sh.rx_ring, l2sh.rx_buf, ARRAY_SIZE(l2sh.rx_buf), &ch, 1)) return -1;
++
++  return ch;
++}
++
++void l2sh_putc(const char c) {
++  u8 ch;
++
++  if (!l2sh_runtime_enabled() || l2sh.state != L2SH_ACTIVE) return;
++
++  l2sh_poll();
++
++  ch = c;
++  if (!l2sh_ring_push(&l2sh.tx_ring, l2sh.tx_buf, ARRAY_SIZE(l2sh.tx_buf), &ch, 1)) return;
++
++  if (c == '\n' || l2sh.tx_ring.count >= L2SH_MAX_DATA) l2sh_tx_drain();
++}
++
++void l2sh_puts(const char *s) {
++  size_t len;
++  u32 pushed;
++
++  if (!s || !l2sh_runtime_enabled() || l2sh.state != L2SH_ACTIVE) return;
++
++  l2sh_poll();
++
++  len = strlen(s);
++  while (len) {
++    if (!l2sh_ring_space(&l2sh.tx_ring, ARRAY_SIZE(l2sh.tx_buf))) {
++      l2sh_tx_drain();
++      if (!l2sh_ring_space(&l2sh.tx_ring, ARRAY_SIZE(l2sh.tx_buf))) break;
++    }
++
++    pushed = l2sh_ring_push(&l2sh.tx_ring, l2sh.tx_buf, ARRAY_SIZE(l2sh.tx_buf), (const u8 *)s, len);
++    s += pushed;
++    len -= pushed;
++
++    if (l2sh.tx_ring.count >= L2SH_MAX_DATA)
++      l2sh_tx_drain();
++  }
++
++  l2sh_tx_drain();
++}
+--- a/net/net.c
++++ b/net/net.c
+@@ -86,6 +86,8 @@
+ #include <env_internal.h>
+ #include <errno.h>
+ #include <image.h>
++#include <l2sh.h>
++#include <l2sh_proto.h>
+ #include <led.h>
+ #include <log.h>
+ #if defined(CONFIG_LED_STATUS)
+@@ -471,9 +473,7 @@ int net_loop(enum proto_t protocol)
+ 	}
+ 
+ restart:
+-#ifdef CONFIG_USB_KEYBOARD
+ 	net_busy_flag = 0;
+-#endif
+ 	net_set_state(NETLOOP_CONTINUE);
+ 
+ 	/*
+@@ -628,9 +628,7 @@ restart:
+ 		status_led_set(CONFIG_LED_STATUS_RED, CONFIG_LED_STATUS_ON);
+ #endif /* CONFIG_SYS_FAULT_ECHO_LINK_DOWN, ... */
+ #endif /* CONFIG_MII, ... */
+-#ifdef CONFIG_USB_KEYBOARD
+ 	net_busy_flag = 1;
+-#endif
+ 
+ 	/*
+ 	 *	Main packet reception loop.  Loop receiving packets until
+@@ -757,9 +755,7 @@ restart:
+ 	}
+ 
+ done:
+-#ifdef CONFIG_USB_KEYBOARD
+ 	net_busy_flag = 0;
+-#endif
+ #ifdef CONFIG_CMD_TFTPPUT
+ 	/* Clear out the handlers */
+ 	net_set_udp_handler(NULL);
+@@ -1214,6 +1210,7 @@ void net_process_received_packet(uchar *
+ 	struct in_addr dst_ip;
+ 	struct in_addr src_ip;
+ 	int eth_proto;
++	int frame_len = len;
+ #if defined(CONFIG_CMD_CDP)
+ 	int iscdp;
+ #endif
+@@ -1314,6 +1311,11 @@ void net_process_received_packet(uchar *
+ 			return;
+ 	}
+ 
++	if (eth_proto == L2SH_ETHERTYPE) {
++		l2sh_rx(in_packet, frame_len);
++		return;
++	}
++
+ 	switch (eth_proto) {
+ 	case PROT_ARP:
+ 		arp_receive(et, ip, len);
