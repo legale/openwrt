@@ -178,8 +178,8 @@
 						reg = <0x4 0x6>;
 					};
 
-					mac_lan: macaddr@30 {
-						reg = <0x30 0x6>;
+					mac_lan: macaddr@24 {
+						reg = <0x24 0x6>;
 					};
 				};
 			};
