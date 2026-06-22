@@ -805,8 +805,10 @@ hostapd_set_bss_options() {
 			json_get_vars \
 			auth_server auth_port auth_secret \
 			ownip radius_client_addr
+			json_get_values auth_servers auth_server
+			[ -n "$auth_servers" ] || auth_servers="$auth_server"
 
-			[ -n "$auth_server" ] &&  {
+			[ -n "$auth_servers" ] &&  {
 				set_default auth_port 1812
 
 				json_for_each_item append_auth_server auth_server
