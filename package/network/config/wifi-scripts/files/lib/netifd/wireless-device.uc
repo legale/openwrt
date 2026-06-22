@@ -440,8 +440,11 @@ function stop()
 
 function check()
 {
-	if (!wdev_update_disabled_vifs(this))
+	if (!wdev_update_disabled_vifs(this)) {
+		if (netifd.reconcile_wireless_recover)
+			netifd.reconcile_wireless_recover(this);
 		return;
+	}
 
 	wdev_config_init(this);
 	this.setup();
