@@ -136,7 +136,9 @@ iptime,ax3000m)
 	ubootenv_add_uci_config "/dev/mtd1" "0x0" "0x20000" "0x80000"
 	;;
 comfast,cf-wa933|\
-comfast,cf-wa933-128m)
+comfast,cf-wa933-128m|\
+comfast,cf-xr185|\
+comfast,cf-xr186)
 	ubootenv_add_uci_config "/dev/mtd1" "0x0" "0x20000" "0x20000"
 	;;
 dlink,aquila-pro-ai-e30-a1|\
